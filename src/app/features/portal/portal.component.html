@@ -1,0 +1,603 @@
+<mat-toolbar class="rs-topbar">
+  <div class="brand">
+    <span class="logo">ReparaSuite</span>
+    <span class="subtitle">Portal Cliente</span>
+  </div>
+
+  <span class="spacer"></span>
+
+  <div class="topbar-actions">
+    <button
+      mat-icon-button
+      class="topbar-icon-btn topbar-badge-btn"
+      [matMenuTriggerFor]="messagesMenu"
+      [matBadge]="unreadMessageCount()"
+      [matBadgeHidden]="unreadMessageCount() === 0"
+      matBadgeColor="warn"
+      matBadgeSize="small"
+      aria-label="Mensajes">
+      <mat-icon>chat_bubble_outline</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      class="topbar-icon-btn topbar-badge-btn"
+      [matMenuTriggerFor]="notificationsMenu"
+      [matBadge]="processNotificationCount()"
+      [matBadgeHidden]="processNotificationCount() === 0"
+      matBadgeColor="warn"
+      matBadgeSize="small"
+      aria-label="Notificaciones">
+      <mat-icon>notifications_none</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      class="topbar-icon-btn"
+      (click)="openHowItWorks()"
+      matTooltip="Cómo funciona"
+      aria-label="Cómo funciona">
+      <mat-icon>help_outline</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      class="topbar-icon-btn"
+      (click)="logout()"
+      matTooltip="Salir"
+      aria-label="Salir">
+      <mat-icon>logout</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>
+
+<mat-menu #messagesMenu="matMenu" xPosition="before" panelClass="rs-topbar-menu-panel">
+  <div class="menu-shell">
+    <div class="menu-header">
+      <div>
+        <div class="menu-title">Mensajes</div>
+        <div class="menu-sub">Canal con tu técnico</div>
+      </div>
+      <span class="menu-chip" *ngIf="unreadMessageCount() > 0">{{ unreadMessageCount() }}</span>
+    </div>
+
+    <ng-container *ngIf="messageMenuItems().length; else emptyMessagesMenu">
+      <button
+        mat-menu-item
+        class="menu-message-item"
+        *ngFor="let m of messageMenuItems(); trackBy: trackById"
+        (click)="focusMessages()">
+        <span class="menu-avatar">
+          <mat-icon>support_agent</mat-icon>
+        </span>
+
+        <span class="menu-copy">
+          <span class="menu-line-top">
+            <span class="menu-line-title">{{ getSenderName(m) }}</span>
+            <span class="menu-line-time">{{ m.createdAt | date:'HH:mm' }}</span>
+          </span>
+          <span class="menu-line-text">{{ m.contenido }}</span>
+        </span>
+      </button>
+
+      <button mat-menu-item class="menu-footer-btn" (click)="focusMessages()">
+        Abrir chat
+      </button>
+    </ng-container>
+
+    <ng-template #emptyMessagesMenu>
+      <div class="menu-empty">
+        <mat-icon>forum</mat-icon>
+        <span>Sin mensajes recientes</span>
+      </div>
+    </ng-template>
+  </div>
+</mat-menu>
+
+<mat-menu #notificationsMenu="matMenu" xPosition="before" panelClass="rs-topbar-menu-panel">
+  <div class="menu-shell">
+    <div class="menu-header">
+      <div>
+        <div class="menu-title">Notificaciones</div>
+        <div class="menu-sub">Presupuesto, citas, pago y estado</div>
+      </div>
+      <span class="menu-chip" *ngIf="processNotificationCount() > 0">{{ processNotificationCount() }}</span>
+    </div>
+
+    <ng-container *ngIf="processNotifications().length; else emptyNotificationsMenu">
+      <button
+        mat-menu-item
+        class="menu-process-item"
+        *ngFor="let n of processNotifications(); trackBy: trackById"
+        (click)="handleProcessNotification(n)">
+        <span class="menu-avatar menu-avatar--soft">
+          <mat-icon>{{ n.icon }}</mat-icon>
+        </span>
+
+        <span class="menu-copy">
+          <span class="menu-line-top">
+            <span class="menu-line-title">{{ n.title }}</span>
+            <span class="menu-line-time" *ngIf="n.date">{{ n.date | date:'dd MMM' }}</span>
+          </span>
+          <span class="menu-line-text">{{ n.subtitle }}</span>
+        </span>
+      </button>
+    </ng-container>
+
+    <ng-template #emptyNotificationsMenu>
+      <div class="menu-empty">
+        <mat-icon>notifications_none</mat-icon>
+        <span>Sin novedades por ahora</span>
+      </div>
+    </ng-template>
+  </div>
+</mat-menu>
+
+<mat-progress-bar
+  *ngIf="loading() || actionBusy()"
+  mode="indeterminate"
+  class="global-loader">
+</mat-progress-bar>
+
+<div class="rs-page">
+  <div class="rs-shell" [class.rs-shell--welcome]="!selectedOtDetalle()">
+    <aside class="side-panel" *ngIf="selectedOtDetalle()">
+      <mat-card class="rs-card main-card main-card--premium">
+        <mat-card-header class="header-compact header-mis-servicios">
+          <mat-card-title class="rs-mini">
+            <mat-icon>format_list_bulleted</mat-icon>
+            <span>Mis Servicios</span>
+          </mat-card-title>
+
+          <button
+            mat-icon-button
+            (click)="openNewTicket()"
+            class="btn-add"
+            matTooltip="Nuevo Ticket"
+            aria-label="Crear nuevo ticket">
+            <mat-icon>add</mat-icon>
+          </button>
+        </mat-card-header>
+
+        <mat-card-content class="main-card-content">
+          <div class="field-label">Seleccionar Orden</div>
+
+          <mat-form-field appearance="outline" floatLabel="auto" class="w100 custom-select minimal-field">
+            <mat-select
+              [value]="selectedOtCodigoSignal()"
+              (selectionChange)="onOtSelectChange($event.value)">
+              <mat-option *ngFor="let ot of ots(); trackBy: trackById" [value]="ot.codigo">
+                <span class="strong ot-option-id">{{ ot.codigo }}</span>
+                <span class="ot-option-sep">·</span>
+                <span class="ot-option-status">{{ ot.estado }}</span>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-expansion-panel class="rs-expansion-clean" flat [expanded]="false">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="list-label-expansion">ÓRDENES RECIENTES</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="list-scrollable">
+              <button
+                type="button"
+                class="ot-item"
+                *ngFor="let ot of ots(); trackBy: trackById"
+                [class.active]="selectedOtCodigo() === ot.codigo"
+                (click)="selectOt(ot)">
+                <div class="ot-item-header">
+                  <span class="ot-id">{{ ot.codigo }}</span>
+                  <span class="ot-date">{{ ot.updatedAt | date:'dd/MM' }}</span>
+                </div>
+
+                <div class="ot-item-footer">
+                  <span class="badge" [attr.data-status]="ot.estado">{{ ot.estado }}</span>
+                  <span class="ot-type">{{ ot.tipo }}</span>
+                </div>
+              </button>
+            </div>
+          </mat-expansion-panel>
+
+          <div class="list-label ticket-label-divider">
+            Tickets de soporte
+            <span class="list-count" *ngIf="tickets().length">({{ tickets().length }})</span>
+          </div>
+
+          <ng-container *ngIf="visibleTickets().length; else emptyTickets">
+            <div class="ticket-list ticket-list--compact">
+              <button
+                type="button"
+                class="ticket-item"
+                *ngFor="let t of visibleTickets(); trackBy: trackById"
+                (click)="openTicket(t.id)">
+                <div class="ticket-content">
+                  <div class="strong truncate">{{ t.asunto }}</div>
+                  <div class="tiny">{{ t.updatedAt | date:'short' }}</div>
+                </div>
+                <span class="badge badge--soft">{{ t.estado }}</span>
+              </button>
+            </div>
+
+            <div class="ticket-more-hint" *ngIf="hiddenTicketCount() > 0">
+              + {{ hiddenTicketCount() }} ticket{{ hiddenTicketCount() > 1 ? 's' : '' }} más en historial
+            </div>
+          </ng-container>
+
+          <ng-template #emptyTickets>
+            <div class="empty-state mini">
+              <p>Sin tickets pendientes</p>
+            </div>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+    </aside>
+
+    <main class="content-panel">
+      <ng-container *ngIf="selectedOtDetalle() as ot; else welcomeState">
+        <div class="detail-view" [class.fade-in]="detailFade()">
+          <section class="status-strip" #statusStripRef>
+            <div class="status-strip-head">
+              <div class="status-strip-meta">
+                <span class="status-strip-dot"></span>
+                <span class="status-strip-title">{{ currentStepLabel() }}</span>
+                <span class="status-strip-step">Paso {{ stepIndex() + 1 }} de {{ steps.length }}</span>
+              </div>
+
+              <div class="status-strip-sync">
+                {{ humanizedSyncLabel() }}
+              </div>
+            </div>
+
+            <div class="stepper-scroll">
+              <div class="status-stepper-standalone status-stepper-standalone--strip">
+                <ng-container *ngFor="let s of steps; let i = index; let last = last">
+                  <div class="step-group">
+                    <div
+                      class="step-node"
+                      [class.done]="i < stepIndex()"
+                      [class.active]="i === stepIndex()"
+                      [class.pending]="i > stepIndex()">
+                      <mat-icon>{{ i < stepIndex() ? 'check' : s.icon }}</mat-icon>
+                    </div>
+                    <span class="step-label">{{ s.label }}</span>
+                  </div>
+
+                  <div
+                    *ngIf="!last"
+                    class="step-connector"
+                    [class.done]="i < stepIndex()"
+                    [class.pending]="i >= stepIndex()">
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </section>
+
+          <section class="ot-summary-surface">
+            <div class="title-group">
+              <h1>
+                Orden <span class="ot-id-hero">#{{ ot.codigo }}</span>
+              </h1>
+
+              <div class="chip-row">
+                <span class="badge badge--solid" [attr.data-status]="ot.estado">{{ ot.estado }}</span>
+                <span class="chip-outline" [attr.data-chip]="ot.tipo">{{ ot.tipo }}</span>
+
+                <span class="chip-outline tienda" *ngIf="ot.prioridad" [attr.data-chip]="ot.prioridad">
+                  {{ ot.prioridad }}
+                </span>
+              </div>
+            </div>
+
+            <div class="ot-description" *ngIf="ot.descripcion">
+              <div class="muted tiny uppercase ls-1">Descripción del problema</div>
+              <p>{{ ot.descripcion }}</p>
+            </div>
+          </section>
+
+          <div class="action-grid">
+            <mat-card class="rs-card gestion-card" #gestionCardTop>
+              <mat-tab-group
+                [selectedIndex]="gestionTabIndex()"
+                (selectedIndexChange)="gestionTabIndex.set($event)"
+                class="rs-tabs-ios"
+                animationDuration="220ms">
+
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <span class="tab-pill">
+                      <mat-icon>payments</mat-icon>
+                      <span class="tab-label-text">Presupuesto</span>
+                    </span>
+                  </ng-template>
+
+                  <div class="tab-pane">
+                    <ng-container *ngIf="ot.presupuesto; else noPres">
+                      <div class="price-hero">
+                        <span class="currency">€</span>
+                        <span class="amount">{{ ot.presupuesto.importe | number:'1.2-2' }}</span>
+                        <span class="status-tag">{{ ot.presupuesto.estado }}</span>
+                      </div>
+
+                      <p class="desc-text">{{ ot.presupuesto.detalle }}</p>
+
+                      <div class="approval-zone" *ngIf="ot.presupuesto.estado === 'ENVIADO'">
+                        <mat-checkbox
+                          [checked]="aceptoCheck()"
+                          (change)="aceptoCheck.set(!aceptoCheck())"
+                          class="custom-check">
+                          He revisado y acepto los términos.
+                        </mat-checkbox>
+
+                        <div class="btn-row">
+                          <button
+                            mat-flat-button
+                            class="btn-main"
+                            (click)="aceptar(ot.id)"
+                            [disabled]="!aceptoCheck() || actionBusy()">
+                            Aceptar
+                          </button>
+
+                          <button
+                            mat-button
+                            class="btn-danger"
+                            (click)="rechazar(ot.id)"
+                            [disabled]="actionBusy()">
+                            Rechazar
+                          </button>
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <ng-template #noPres>
+                      <div class="empty-tab">
+                        <mat-icon>pending_actions</mat-icon>
+                        <p>Esperando valoración</p>
+                      </div>
+                    </ng-template>
+                  </div>
+                </mat-tab>
+
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <span class="tab-pill">
+                      <mat-icon>event</mat-icon>
+                      <span class="tab-label-text">Citas</span>
+                    </span>
+                  </ng-template>
+
+                  <div class="tab-pane">
+                    <div class="cita-card-compact" *ngIf="nextCita() as c; else noCita">
+                      <div class="cita-header">
+                        <mat-icon>calendar_today</mat-icon>
+                        <span>{{ c.inicio | date:'dd MMMM' }}</span>
+                      </div>
+
+                      <div class="time-slot">{{ c.inicio | date:'HH:mm' }} - {{ c.fin | date:'HH:mm' }}</div>
+                      <div class="badge badge--soft">{{ c.estado }}</div>
+                    </div>
+
+                    <ng-template #noCita>
+                      <div class="empty-tab">
+                        <mat-icon>schedule</mat-icon>
+                        <p>Sin citas</p>
+                      </div>
+                    </ng-template>
+                  </div>
+                </mat-tab>
+
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <span class="tab-pill">
+                      <mat-icon>account_balance</mat-icon>
+                      <span class="tab-label-text">Pago</span>
+                    </span>
+                  </ng-template>
+
+                  <div class="tab-pane">
+                    <div class="pago-container-compact">
+                      <div class="bank-info-mini">
+                        <span class="bank-label">IBAN PARA TRANSFERENCIA</span>
+
+                        <div class="bank-row">
+                          <span class="bank-value">ES00 0000 0000 0000 0000 0000</span>
+
+                          <button
+                            mat-icon-button
+                            (click)="copyToClipboard('ES0000000000000000000000')"
+                            class="btn-copy-tiny"
+                            aria-label="Copiar IBAN">
+                            <mat-icon>content_copy</mat-icon>
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        mat-flat-button
+                        class="btn-main-sm w100"
+                        (click)="marcarTransferencia(ot.id)"
+                        [disabled]="actionBusy()">
+                        Confirmar Transferencia
+                      </button>
+
+                      <div class="upload-minimal-box">
+                        <label class="file-label-pro">
+                          <input type="file" hidden (change)="onPagoFileSelected($event)" />
+                          <mat-icon>attach_file</mat-icon>
+                          <span class="truncate">{{ pagoFile() ? pagoFile()!.name : 'Comprobante' }}</span>
+                        </label>
+
+                        <button
+                          mat-button
+                          class="btn-send-flat"
+                          (click)="uploadComprobante(ot.id)"
+                          [disabled]="!pagoFile() || actionBusy()">
+                          Enviar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </mat-tab>
+              </mat-tab-group>
+            </mat-card>
+
+            <mat-card class="rs-card chat-card" #chatCardRef>
+              <mat-card-header class="header-compact chat-header">
+                <mat-card-title class="rs-mini">
+                  <mat-icon>forum</mat-icon>
+                  <span>Mensajes</span>
+                  <span class="chat-count-badge" *ngIf="quickUnreadCount() > 0">{{ quickUnreadCount() }}</span>
+                </mat-card-title>
+
+                <div class="chat-header-sub">Canal con tu técnico</div>
+              </mat-card-header>
+
+              <mat-card-content class="chat-container">
+                <div class="chat-messages" #chatScroll>
+                  <ng-container *ngIf="chatItems().length; else emptyChat">
+                    <ng-container *ngFor="let item of chatItems(); trackBy: trackById">
+                      <div class="chat-day-divider" *ngIf="item.showDayDivider">
+                        <span>{{ item.dayLabel }}</span>
+                      </div>
+
+                      <div
+                        class="msg-row"
+                        [class.me]="item.isMine"
+                        [class.grouped]="!item.showMeta && !item.isMine">
+
+                        <ng-container *ngIf="!item.isMine">
+                          <div class="msg-avatar" *ngIf="item.showAvatar; else avatarSpacer">
+                            <mat-icon>support_agent</mat-icon>
+                          </div>
+
+                          <ng-template #avatarSpacer>
+                            <div class="msg-avatar-spacer"></div>
+                          </ng-template>
+                        </ng-container>
+
+                        <div class="msg-stack" [class.me]="item.isMine">
+                          <div class="msg-meta-line" *ngIf="item.showMeta && !item.isMine">
+                            <span class="msg-author">{{ getSenderName(item.message) }}</span>
+                            <span class="msg-time-inline">{{ item.message.createdAt | date:'dd MMM · HH:mm' }}</span>
+                          </div>
+
+                          <div class="msg-bubble" [class.me]="item.isMine">
+                            <div class="msg-text">{{ item.message.contenido }}</div>
+                            <div class="msg-time">{{ item.message.createdAt | date:'HH:mm' }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+
+                  <ng-template #emptyChat>
+                    <div class="chat-empty-state">
+                      <div class="chat-empty-icon">
+                        <mat-icon>forum</mat-icon>
+                      </div>
+                      <h3>Aún no hay mensajes</h3>
+                      <p>Cuando el taller te escriba, la conversación aparecerá aquí.</p>
+                    </div>
+                  </ng-template>
+                </div>
+
+                <div class="chat-input-wrap">
+                  <div class="chat-input-row">
+                    <input
+                      #chatInput
+                      type="text"
+                      placeholder="Escribe a tu técnico..."
+                      [formControl]="msgForm.controls.contenido"
+                      (keydown.enter)="sendMsgOt(ot.id)" />
+
+                    <button
+                      mat-icon-button
+                      (click)="sendMsgOt(ot.id)"
+                      [disabled]="msgForm.invalid || actionBusy()"
+                      aria-label="Enviar">
+                      <mat-icon>send</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #welcomeState>
+        <ng-container *ngIf="loading(); else welcomeLoaded">
+          <div class="welcome-layout welcome-layout--loading">
+            <div class="welcome-skeleton-hero rs-card">
+              <div class="sk sk-icon"></div>
+              <div class="sk sk-line sk-line--title"></div>
+              <div class="sk sk-line sk-line--text"></div>
+              <div class="sk sk-line sk-line--text short"></div>
+              <div class="sk sk-btn"></div>
+            </div>
+
+            <div class="welcome-skeleton-grid">
+              <div class="welcome-skeleton-mini rs-card" *ngFor="let i of [1,2,3]">
+                <div class="sk sk-mini-icon"></div>
+                <div class="sk sk-line sk-line--mini-title"></div>
+                <div class="sk sk-line sk-line--mini-text"></div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #welcomeLoaded>
+          <div class="welcome-layout">
+            <div class="welcome-hero-container">
+              <div class="welcome-hero rs-card">
+                <div class="hero-icon">
+                  <mat-icon>auto_awesome</mat-icon>
+                </div>
+
+                <h1>¡Bienvenido a ReparaSuite!</h1>
+                <p>
+                  Crea un nuevo ticket para comenzar. Cuando el taller acepte tu solicitud,
+                  la orden aparecerá aquí automáticamente.
+                </p>
+
+                <button mat-flat-button class="btn-main btn-pill btn-hero" (click)="openNewTicket()">
+                  <mat-icon>add</mat-icon>
+                  Crear Nuevo Ticket
+                </button>
+              </div>
+            </div>
+
+            <div class="welcome-pending-card rs-card" *ngIf="pendingTicket()">
+              <div class="pending-icon-wrap">
+                <span class="pending-pulse"></span>
+                <mat-icon>schedule</mat-icon>
+              </div>
+
+              <div class="pending-copy">
+                <h3>Tu solicitud fue enviada correctamente</h3>
+                <p>
+                  Nuestro equipo debe revisarla y aceptarla antes de generar la orden de trabajo.
+                  No necesitas refrescar: en cuanto esté disponible, aparecerá aquí automáticamente.
+                </p>
+              </div>
+            </div>
+
+            <section class="welcome-timeline" aria-label="Cómo funciona">
+              <div class="timeline-step" *ngFor="let s of welcomeSteps">
+                <div class="timeline-node">
+                  <mat-icon>{{ s.icon }}</mat-icon>
+                </div>
+
+                <div class="timeline-copy">
+                  <h3>{{ s.title }}</h3>
+                  <p>{{ s.desc }}</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </ng-template>
+      </ng-template>
+    </main>
+  </div>
+</div>

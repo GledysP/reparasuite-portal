@@ -1,0 +1,153 @@
+<div class="auth-container">
+  <!-- HERO (solo desktop) -->
+  <section class="auth-hero" aria-hidden="true">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-grid"></div>
+
+    <div class="hero-content">
+      <div class="top-badge">Portal Oficial</div>
+
+      <h1 class="hero-title">
+        Descubre tu <br /><span>Portal Cliente</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Explora un mundo de servicios por línea y de la mano con la tecnología.
+      </p>
+
+      <div class="hero-buttons">
+        <button mat-button class="btn-outline" type="button">Información</button>
+        <button mat-button class="btn-outline" type="button">Registrar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section class="auth-form-side">
+    <mat-card class="login-card">
+      <div class="login-header">
+        <div class="main-logo-container" aria-hidden="true">
+          <mat-icon>terminal</mat-icon>
+        </div>
+
+        <h2>Iniciar Sesión</h2>
+        <p>¡Bienvenido de nuevo! Te extrañamos.</p>
+      </div>
+
+      <mat-card-content class="card-content">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+          @if (error) {
+            <div class="error-banner" role="alert" aria-live="polite">
+              <mat-icon>error_outline</mat-icon>
+              <span>{{ error }}</span>
+            </div>
+          }
+
+          <mat-form-field appearance="outline" class="custom-pill-input">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              formControlName="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="ejemplo@mail.com"
+              [disabled]="loading"
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="custom-pill-input">
+            <mat-label>Contraseña</mat-label>
+
+            <input
+              matInput
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password"
+              autocomplete="current-password"
+              enterkeyhint="go"
+              [disabled]="loading"
+            />
+
+            <button
+              type="button"
+              mat-icon-button
+              matSuffix
+              class="pw-toggle"
+              (click)="togglePassword()"
+              [attr.aria-label]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+              [disabled]="loading"
+            >
+              <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <div class="forgot-password-box">
+            <mat-checkbox formControlName="recordarme" [disabled]="loading">
+              Recordarme
+            </mat-checkbox>
+
+            <a class="link" [routerLink]="['/auth/forgot-password']">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+
+          <button
+            mat-flat-button
+            class="btn-figma-pro"
+            type="submit"
+            [disabled]="form.invalid || loading"
+          >
+            <span>{{ loading ? 'Entrando...' : 'Entrar' }}</span>
+
+            @if (loading) {
+              <mat-progress-spinner
+                class="cta-spinner"
+                diameter="18"
+                mode="indeterminate"
+              ></mat-progress-spinner>
+            }
+          </button>
+
+          <div class="divider">
+            <span>o continúa con</span>
+          </div>
+
+          <div class="social-auth-row" role="group" aria-label="Login social">
+            <button
+              type="button"
+              class="social-btn"
+              aria-label="Continuar con Google"
+              (click)="loginWithGoogle()"
+            >
+              <img src="https://www.google.com/favicon.ico" alt="" width="18" height="18" />
+            </button>
+
+            <button
+              type="button"
+              class="social-btn"
+              aria-label="Continuar con Facebook"
+              (click)="loginWithFacebook()"
+            >
+              <mat-icon>facebook</mat-icon>
+            </button>
+
+            <button
+              type="button"
+              class="social-btn"
+              aria-label="Continuar con Apple"
+              (click)="loginWithApple()"
+            >
+              <mat-icon>apple</mat-icon>
+            </button>
+          </div>
+
+          <div class="register-block">
+            <span>¿No tienes cuenta?</span>
+            <a class="register-link" [routerLink]="['/auth/register']">Crea una ahora</a>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </section>
+</div>

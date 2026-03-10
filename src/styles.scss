@@ -1,0 +1,122 @@
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: #f8fafb;
+  color: #0f172a;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  line-height: 1;
+}
+
+/* =========================================================
+   Ticket Dialog Overlay Premium
+   panelClass: 'rs-ticket-dialog-panel'
+   ========================================================= */
+
+@keyframes rsDialogIn {
+  from {
+    transform: translateY(12px) scale(0.988);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.cdk-overlay-pane.rs-ticket-dialog-panel {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  max-width: 96vw !important;
+  max-height: 92dvh !important;
+}
+
+.cdk-overlay-pane.rs-ticket-dialog-panel .mat-mdc-dialog-container {
+  padding: 0 !important;
+}
+
+.cdk-overlay-pane.rs-ticket-dialog-panel .mat-mdc-dialog-surface {
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: none !important;
+
+  width: min(760px, 96vw) !important;
+  max-width: 96vw !important;
+  max-height: 92dvh !important;
+
+  border-radius: 30px !important;
+  background: #ffffff !important;
+
+  box-shadow:
+    0 28px 80px rgba(15, 23, 42, 0.16),
+    0 10px 28px rgba(15, 23, 42, 0.06) !important;
+
+  animation: rsDialogIn 220ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+.cdk-overlay-pane.rs-ticket-dialog-panel .mat-mdc-dialog-content {
+  max-height: none !important;
+}
+
+.cdk-overlay-pane.rs-ticket-dialog-panel .mdc-floating-label {
+  background: transparent !important;
+  padding: 0 6px !important;
+}
+
+.cdk-overlay-pane.rs-ticket-dialog-panel .mat-mdc-form-field-required-marker {
+  display: none !important;
+}
+
+.rs-ticket-select-panel.mat-mdc-select-panel {
+  background: #fff !important;
+  border-radius: 16px !important;
+  padding: 6px 0 !important;
+  border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12) !important;
+  overflow: hidden !important;
+}
+
+.rs-ticket-select-panel .mat-mdc-option.mdc-list-item--selected,
+.rs-ticket-select-panel .mat-mdc-option.mat-mdc-option-active {
+  background: rgba(18, 78, 89, 0.08) !important;
+}
+
+@media (max-width: 640px) {
+  .cdk-overlay-pane.rs-ticket-dialog-panel {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    transform: none !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+
+  .cdk-overlay-pane.rs-ticket-dialog-panel .mat-mdc-dialog-container,
+  .cdk-overlay-pane.rs-ticket-dialog-panel .mdc-dialog__container,
+  .cdk-overlay-pane.rs-ticket-dialog-panel .mat-mdc-dialog-surface {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+
+  .cdk-overlay-pane.rs-ticket-dialog-panel .mat-mdc-dialog-surface {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+    background: #ffffff !important;
+  }
+}

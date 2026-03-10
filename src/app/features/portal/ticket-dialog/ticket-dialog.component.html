@@ -1,0 +1,186 @@
+<div class="rs-ticket">
+  <button
+    mat-icon-button
+    mat-dialog-close
+    class="rs-close"
+    aria-label="Cerrar"
+  >
+    <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+  </button>
+
+  <div class="rs-shell">
+    <div class="rs-head">
+      <div class="rs-icon" aria-hidden="true">
+        <mat-icon fontSet="material-symbols-outlined">add_task</mat-icon>
+      </div>
+
+      <div class="rs-badge">Soporte técnico</div>
+
+      <h1>Nueva solicitud</h1>
+      <p>Completa los datos para asignarte un técnico.</p>
+    </div>
+
+    <mat-dialog-content class="rs-body">
+      <form [formGroup]="form" class="rs-form" (ngSubmit)="crear()">
+        <div class="rs-grid rs-grid--top">
+          <mat-form-field
+            appearance="outline"
+            class="rs-field rs-field--soft"
+            [class.rs-invalid]="isInvalid('equipo')"
+            [class.rs-shake]="isInvalid('equipo') && shakeTick()"
+          >
+            <mat-label>Equipo</mat-label>
+
+            <mat-icon matPrefix fontSet="material-symbols-outlined">
+              devices
+            </mat-icon>
+
+            <input
+              matInput
+              formControlName="equipo"
+              placeholder="Ej: Laptop Lenovo / TV Samsung"
+              autocomplete="off"
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="rs-field rs-field--soft">
+            <mat-label>Tipo de servicio</mat-label>
+
+            <mat-select
+              formControlName="tipoServicioSugerido"
+              [panelClass]="'rs-ticket-select-panel'"
+            >
+              <mat-option value="TIENDA">En taller</mat-option>
+              <mat-option value="DOMICILIO">A domicilio</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field
+          appearance="outline"
+          class="rs-field rs-field--soft w100"
+          [class.rs-invalid]="isInvalid('descripcionFalla')"
+          [class.rs-shake]="isInvalid('descripcionFalla') && shakeTick()"
+        >
+          <mat-label>Descripción de la falla</mat-label>
+
+          <textarea
+            matInput
+            formControlName="descripcionFalla"
+            rows="3"
+            placeholder="Describe el problema con claridad. Ej: no enciende, se apaga después de unos minutos, la pantalla parpadea…"
+          ></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="rs-field rs-field--soft w100">
+          <mat-label>Dirección / ubicación</mat-label>
+
+          <mat-icon matPrefix fontSet="material-symbols-outlined">
+            location_on
+          </mat-icon>
+
+          <textarea
+            matInput
+            formControlName="direccion"
+            rows="2"
+            placeholder="Solo si requiere recogida o visita"
+          ></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="rs-field rs-field--soft w100">
+          <mat-label>Observaciones</mat-label>
+
+          <textarea
+            matInput
+            formControlName="observaciones"
+            rows="2"
+            placeholder="Detalles adicionales que ayuden al diagnóstico"
+          ></textarea>
+        </mat-form-field>
+
+        <div
+          class="rs-dropzone"
+          [class.is-active]="dragActive()"
+          [class.has-file]="selectedFile()"
+          role="button"
+          tabindex="0"
+          (click)="fileInput.click()"
+          (keydown.enter)="fileInput.click()"
+          (keydown.space)="fileInput.click()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+        >
+          <input
+            type="file"
+            #fileInput
+            hidden
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            capture="environment"
+          />
+
+          <div class="dz-icon" aria-hidden="true">
+            <mat-icon fontSet="material-symbols-outlined">
+              {{ selectedFile() ? 'check_circle' : 'photo_camera' }}
+            </mat-icon>
+          </div>
+
+          <div class="dz-text">
+            <div class="dz-title">
+              {{ selectedFile() ? 'Archivo listo para enviar' : 'Adjuntar foto' }}
+
+              <span class="dz-chip" *ngIf="selectedFile()">Listo</span>
+            </div>
+
+            <div class="dz-sub">
+              {{
+                selectedFile()
+                  ? selectedFile()?.name
+                  : 'Arrastra aquí o toca para seleccionar'
+              }}
+            </div>
+          </div>
+
+          <button
+            *ngIf="selectedFile()"
+            type="button"
+            mat-icon-button
+            class="dz-clear"
+            aria-label="Quitar archivo"
+            (click)="$event.stopPropagation(); clearFile()"
+          >
+            <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+          </button>
+        </div>
+
+        <div class="rs-info">
+          <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">
+            info
+          </mat-icon>
+
+          <p>
+            Puedes enviar la solicitud ahora y luego chatear con el taller para
+            acordar detalles del servicio.
+          </p>
+        </div>
+
+        <div class="rs-actions-dock">
+          <button
+            mat-flat-button
+            class="btn-primary"
+            type="submit"
+            [disabled]="form.disabled || loading()"
+          >
+            <span *ngIf="!loading()">Enviar solicitud</span>
+            <mat-spinner *ngIf="loading()" diameter="18"></mat-spinner>
+          </button>
+
+          <button mat-button mat-dialog-close class="btn-secondary">
+            Cerrar
+          </button>
+        </div>
+      </form>
+    </mat-dialog-content>
+  </div>
+</div>

@@ -1,0 +1,317 @@
+$rs-primary: #124E59;
+$bg-smoke: #F2F4F7;
+
+:host {
+  display: block;
+  font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: $bg-smoke;
+  overflow-x: hidden;
+}
+
+.auth-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  flex: 1.2;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(94, 234, 212, 0.12), transparent 30%),
+    radial-gradient(circle at 82% 22%, rgba(255, 255, 255, 0.07), transparent 26%),
+    linear-gradient(135deg, $rs-primary 0%, #0a2d34 100%);
+  padding: 60px;
+  display: flex;
+  align-items: center;
+  color: white;
+
+  @media (max-width: 992px) {
+    display: none;
+  }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 540px;
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.08;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at center, black 35%, transparent 85%);
+}
+
+.hero-glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(32px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-glow-1 {
+  width: 360px;
+  height: 360px;
+  right: -100px;
+  top: -80px;
+  background: rgba(94, 234, 212, 0.12);
+}
+
+.hero-glow-2 {
+  width: 260px;
+  height: 260px;
+  left: -70px;
+  bottom: -60px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.top-badge {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-weight: 800;
+  font-size: 12px;
+  margin-bottom: 18px;
+  backdrop-filter: blur(8px);
+}
+
+.hero-title {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.7px;
+  margin: 0;
+
+  span {
+    color: #5eead4;
+  }
+}
+
+.hero-subtitle {
+  font-size: 17px;
+  line-height: 1.72;
+  opacity: 0.92;
+  margin: 24px 0 42px;
+  max-width: 490px;
+}
+
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn-outline {
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  color: white;
+  border-radius: 12px;
+}
+
+.auth-form-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $bg-smoke;
+  padding: 24px;
+
+  @media (max-width: 600px) {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    background: #ffffff;
+  }
+}
+
+.login-card {
+  width: 92%;
+  max-width: 430px;
+  background: #ffffff !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  box-shadow:
+    0 22px 60px rgba(15, 23, 42, 0.08),
+    0 6px 18px rgba(15, 23, 42, 0.05) !important;
+  padding: 42px 30px;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100svh;
+    min-height: 100dvh;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding:
+      calc(clamp(16px, 5vh, 42px) + env(safe-area-inset-top))
+      20px
+      calc(clamp(16px, 4vh, 34px) + env(safe-area-inset-bottom));
+    overflow: auto;
+  }
+}
+
+.card-content {
+  padding: 0 !important;
+}
+
+.main-logo-container {
+  width: 70px;
+  height: 70px;
+  background: rgba(18, 78, 89, 0.08);
+  color: $rs-primary;
+  border-radius: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+
+  mat-icon {
+    font-size: 35px;
+    width: 35px;
+    height: 35px;
+  }
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #64748b;
+    margin: 8px auto 0;
+    max-width: 320px;
+  }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .custom-pill-input {
+  width: 100%;
+  margin-bottom: 10px;
+
+  --mdc-outlined-text-field-container-shape: 22px;
+  --mdc-outlined-text-field-outline-color: rgba(15, 23, 42, 0.14);
+  --mdc-outlined-text-field-hover-outline-color: rgba(15, 23, 42, 0.22);
+  --mdc-outlined-text-field-focus-outline-color: #{$rs-primary};
+  --mdc-outlined-text-field-container-color: #F1F5F9;
+
+  .mat-mdc-form-field-infix {
+    padding-top: 13px !important;
+    padding-bottom: 13px !important;
+    min-height: 48px;
+  }
+
+  .mat-mdc-input-element {
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+  }
+
+  .mdc-floating-label,
+  .mat-mdc-floating-label {
+    font-size: 12.5px !important;
+    font-weight: 700;
+  }
+}
+
+.pw-toggle {
+  width: 42px;
+  height: 42px;
+}
+
+.btn-figma-pro {
+  width: 100%;
+  height: 56px !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+  font-weight: 900 !important;
+  font-size: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10), rgba(0,0,0,0.06)),
+    $rs-primary !important;
+  box-shadow:
+    0 14px 34px rgba(18, 78, 89, 0.18),
+    0 6px 12px rgba(18, 78, 89, 0.10) !important;
+}
+
+.cta-spinner {
+  margin-left: 10px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.register-block {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+.register-link {
+  color: $rs-primary;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+}
+
+.error-banner,
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  margin-bottom: 8px;
+}
+
+.error-banner {
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  color: #991b1b;
+}
+
+.success-banner {
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.18);
+  color: #166534;
+}
+
+.error-inline {
+  margin: 2px 0 14px;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 700;
+}

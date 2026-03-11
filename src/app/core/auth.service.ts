@@ -5,8 +5,24 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { decodeJwt, isExpired } from './jwt';
 
-interface PortalLoginRequest { email: string; password: string; }
-interface PortalLoginResponse { token: string; }
+interface PortalLoginRequest {
+  email: string;
+  password: string;
+}
+
+interface PortalLoginResponse {
+  token: string;
+}
+
+interface PortalRegisterRequest {
+  nombre: string;
+  email: string;
+  password: string;
+}
+
+interface PortalRegisterResponse {
+  message: string;
+}
 
 const TOKEN_KEY = 'reparasuite_portal_token';
 
@@ -27,11 +43,23 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<void> {
     const url = `${environment.apiBaseUrl}/api/v1/portal/auth/login`;
+
     const res = await firstValueFrom(
       this.http.post<PortalLoginResponse>(url, { email, password } as PortalLoginRequest)
     );
+
     localStorage.setItem(TOKEN_KEY, res.token);
     this.tokenSig.set(res.token);
+  }
+
+  async register(nombre: string, email: string, password: string): Promise<string> {
+    const url = `${environment.apiBaseUrl}/api/v1/portal/auth/register`;
+
+    const res = await firstValueFrom(
+      this.http.post<PortalRegisterResponse>(url, { nombre, email, password } as PortalRegisterRequest)
+    );
+
+    return res.message || 'Cuenta creada correctamente';
   }
 
   logout(): void {

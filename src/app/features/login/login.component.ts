@@ -74,15 +74,15 @@ export class LoginComponent {
     }
   }
 
-  loginWithGoogle() {
-    console.log('Google login');
-  }
+ loginWithGoogle() {
+  this.error = 'Inicio con Google disponible próximamente';
+}
 
-  loginWithFacebook() {
-    console.log('Facebook login');
-  }
+loginWithFacebook() {
+  this.error = 'Inicio con Facebook disponible próximamente';
+}
 
-  loginWithApple() {
-    console.log('Apple login');
-  }
+loginWithApple() {
+  this.error = 'Inicio con Apple disponible próximamente';
+}
 }

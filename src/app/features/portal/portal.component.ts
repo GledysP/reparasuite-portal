@@ -836,7 +836,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (showSpinner) this.loading.set(true);
 
     try {
-      const res = await this.otService.listarMisOts(clienteId, 0, 50);
+      const res = await this.otService.listarMisOts(0, 50);
       this.ots.set(res.items);
       this.markSynced();
 

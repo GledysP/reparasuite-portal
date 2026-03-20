@@ -13,8 +13,8 @@ export class OtService {
 
   constructor(private http: HttpClient) {}
 
-  listarMisOts(clienteId: string, page = 0, size = 20) {
-    const url = `${this.base}/api/v1/clientes/${clienteId}/ordenes-trabajo?page=${page}&size=${size}`;
+  listarMisOts(page = 0, size = 20) {
+    const url = `${this.base}/api/v1/portal/ordenes-trabajo?page=${page}&size=${size}`;
     return firstValueFrom(this.http.get<ApiListaResponse<ClienteOtItemDto>>(url));
   }
 

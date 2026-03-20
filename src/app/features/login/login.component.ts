@@ -66,23 +66,26 @@ export class LoginComponent {
 
       await this.auth.login(email!, password!);
       this.router.navigateByUrl('/app');
-    } catch (err) {
-      this.error = 'Credenciales inválidas o error de conexión';
+    } catch (err: any) {
+      this.error =
+        err?.status === 429
+          ? 'Demasiados intentos. Intenta más tarde.'
+          : 'Credenciales inválidas o error de conexión';
       console.error('Login error:', err);
     } finally {
       this.loading = false;
     }
   }
 
- loginWithGoogle() {
-  this.error = 'Inicio con Google disponible próximamente';
-}
+  loginWithGoogle() {
+    this.error = 'Inicio con Google disponible próximamente';
+  }
 
-loginWithFacebook() {
-  this.error = 'Inicio con Facebook disponible próximamente';
-}
+  loginWithFacebook() {
+    this.error = 'Inicio con Facebook disponible próximamente';
+  }
 
-loginWithApple() {
-  this.error = 'Inicio con Apple disponible próximamente';
-}
+  loginWithApple() {
+    this.error = 'Inicio con Apple disponible próximamente';
+  }
 }

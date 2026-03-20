@@ -11,7 +11,9 @@ interface PortalLoginRequest {
 }
 
 interface PortalLoginResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string | null;
+  expiresInSeconds: number;
 }
 
 interface PortalRegisterRequest {
@@ -45,24 +47,62 @@ export class AuthService {
     const url = `${environment.apiBaseUrl}/api/v1/portal/auth/login`;
 
     const res = await firstValueFrom(
-      this.http.post<PortalLoginResponse>(url, { email, password } as PortalLoginRequest)
+      this.http.post<PortalLoginResponse>(
+        url,
+        { email, password } as PortalLoginRequest,
+        { withCredentials: true }
+      )
     );
 
-    localStorage.setItem(TOKEN_KEY, res.token);
-    this.tokenSig.set(res.token);
+    localStorage.setItem(TOKEN_KEY, res.accessToken);
+    this.tokenSig.set(res.accessToken);
+  }
+
+  async refresh(): Promise<boolean> {
+    try {
+      const url = `${environment.apiBaseUrl}/api/v1/portal/auth/refresh`;
+
+      const res = await firstValueFrom(
+        this.http.post<PortalLoginResponse>(url, {}, { withCredentials: true })
+      );
+
+      localStorage.setItem(TOKEN_KEY, res.accessToken);
+      this.tokenSig.set(res.accessToken);
+      return true;
+    } catch {
+      this.logoutLocal();
+      return false;
+    }
   }
 
   async register(nombre: string, email: string, password: string): Promise<string> {
     const url = `${environment.apiBaseUrl}/api/v1/portal/auth/register`;
 
     const res = await firstValueFrom(
-      this.http.post<PortalRegisterResponse>(url, { nombre, email, password } as PortalRegisterRequest)
+      this.http.post<PortalRegisterResponse>(
+        url,
+        { nombre, email, password } as PortalRegisterRequest
+      )
     );
 
     return res.message || 'Cuenta creada correctamente';
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.post<void>(
+          `${environment.apiBaseUrl}/api/v1/portal/auth/logout`,
+          {},
+          { withCredentials: true }
+        )
+      );
+    } finally {
+      this.logoutLocal();
+    }
+  }
+
+  logoutLocal(): void {
     localStorage.removeItem(TOKEN_KEY);
     this.tokenSig.set(null);
   }
@@ -70,7 +110,7 @@ export class AuthService {
   ensureValidOrLogout(): void {
     const t = this.tokenSig();
     if (!t) return;
-    if (isExpired(t)) this.logout();
+    if (isExpired(t)) this.logoutLocal();
   }
 
   getClienteId(): string | null {

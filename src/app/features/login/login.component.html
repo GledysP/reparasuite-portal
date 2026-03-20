@@ -1,9 +1,11 @@
 <div class="auth-container">
-  <!-- HERO (solo desktop) -->
   <section class="auth-hero" aria-hidden="true">
-    <div class="hero-glow hero-glow-1"></div>
-    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
     <div class="hero-grid"></div>
+    <div class="hero-grid hero-grid-strong"></div>
+    <div class="hero-light-sweep"></div>
 
     <div class="hero-content">
       <div class="top-badge">Portal Oficial</div>
@@ -13,26 +15,34 @@
       </h1>
 
       <p class="hero-subtitle">
-        Explora un mundo de servicios por línea y de la mano con la tecnología.
+        Consulta tus servicios, seguimiento, historial y atención desde una experiencia clara, moderna y segura.
       </p>
+
+      <div class="hero-pills">
+        <span class="hero-pill">Seguimiento</span>
+        <span class="hero-pill">Servicios</span>
+        <span class="hero-pill">Historial</span>
+        <span class="hero-pill">Soporte</span>
+      </div>
 
       <div class="hero-buttons">
         <button mat-button class="btn-outline" type="button">Información</button>
-        <button mat-button class="btn-outline" type="button"  [routerLink]="['/auth/register']">Registrar</button>
+        <button mat-button class="btn-outline" type="button" [routerLink]="['/auth/register']">Registrar</button>
       </div>
     </div>
   </section>
 
-  <!-- FORM -->
   <section class="auth-form-side">
     <mat-card class="login-card">
+      <div class="card-glow"></div>
+
       <div class="login-header">
         <div class="main-logo-container" aria-hidden="true">
           <mat-icon>terminal</mat-icon>
         </div>
 
         <h2>Iniciar Sesión</h2>
-        <p>¡Bienvenido de nuevo! Te extrañamos.</p>
+        <p>Accede a tus servicios, seguimiento y atención personalizada.</p>
       </div>
 
       <mat-card-content class="card-content">

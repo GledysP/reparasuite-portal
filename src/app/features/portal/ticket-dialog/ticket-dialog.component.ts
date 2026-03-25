@@ -1,6 +1,17 @@
-import { Component, Inject, signal, inject } from '@angular/core';
+import {
+  Component,
+  Inject,
+  signal,
+  inject,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+} from '@angular/forms';
+import { TextFieldModule } from '@angular/cdk/text-field';
 
 import {
   MatDialogRef,
@@ -29,6 +40,7 @@ import { TicketDetalleDto } from '../../../core/models';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    TextFieldModule,
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
@@ -41,17 +53,17 @@ import { TicketDetalleDto } from '../../../core/models';
   templateUrl: './ticket-dialog.component.html',
   styleUrls: ['./ticket-dialog.component.scss'],
 })
-export class TicketDialogComponent {
+export class TicketDialogComponent implements OnDestroy {
   private fb = inject(FormBuilder).nonNullable;
   private ticketsService = inject(TicketsService);
   private snack = inject(MatSnackBar);
 
   loading = signal(false);
   selectedFile = signal<File | null>(null);
+  selectedFilePreview = signal<string | null>(null);
   dragActive = signal(false);
 
   submitAttempted = signal(false);
-  shakeTick = signal(0);
 
   form = this.fb.group({
     equipo: ['', [Validators.required]],
@@ -75,53 +87,77 @@ export class TicketDialogComponent {
           '',
         direccion: (data.ticket as any).direccion ?? '',
         observaciones: (data.ticket as any).observaciones ?? '',
+        tipoServicioSugerido:
+          (data.ticket as any).tipoServicioSugerido ?? '',
       });
 
       this.form.disable();
     }
   }
 
-  isInvalid(name: keyof typeof this.form.controls) {
-    const c = this.form.controls[name];
-    return c.invalid && (c.touched || this.submitAttempted());
+  ngOnDestroy(): void {
+    this.revokePreviewUrl();
   }
 
-  private triggerShake() {
-    this.shakeTick.update((v) => v + 1);
+  isInvalid(name: keyof typeof this.form.controls): boolean {
+    const control = this.form.controls[name];
+    return control.invalid && (control.touched || this.submitAttempted());
   }
 
-  clearFile() {
+  private revokePreviewUrl(): void {
+    const currentPreview = this.selectedFilePreview();
+    if (currentPreview) {
+      URL.revokeObjectURL(currentPreview);
+    }
+  }
+
+  clearFile(): void {
+    this.revokePreviewUrl();
     this.selectedFile.set(null);
+    this.selectedFilePreview.set(null);
   }
 
-  onFileSelected(event: Event) {
+  private setSelectedFile(file: File): void {
+    this.revokePreviewUrl();
+    this.selectedFile.set(file);
+    this.selectedFilePreview.set(URL.createObjectURL(file));
+  }
+
+  onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files?.length) this.selectedFile.set(input.files[0]);
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    this.setSelectedFile(file);
+    input.value = '';
   }
 
-  onDragOver(ev: DragEvent) {
-    ev.preventDefault();
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
     this.dragActive.set(true);
   }
 
-  onDragLeave(ev: DragEvent) {
-    ev.preventDefault();
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
     this.dragActive.set(false);
   }
 
-  onDrop(ev: DragEvent) {
-    ev.preventDefault();
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
     this.dragActive.set(false);
-    const f = ev.dataTransfer?.files?.[0];
-    if (f) this.selectedFile.set(f);
+
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) return;
+
+    this.setSelectedFile(file);
   }
 
-  async crear() {
+  async crear(): Promise<void> {
     this.submitAttempted.set(true);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.triggerShake();
       return;
     }
 
@@ -142,7 +178,10 @@ export class TicketDialogComponent {
       const ticket = await this.ticketsService.crear(payload);
 
       if (this.selectedFile() && (ticket as any).id) {
-        await this.ticketsService.subirFoto((ticket as any).id, this.selectedFile()!);
+        await this.ticketsService.subirFoto(
+          (ticket as any).id,
+          this.selectedFile()!,
+        );
       }
 
       this.dialogRef.close(ticket);
@@ -150,7 +189,7 @@ export class TicketDialogComponent {
       this.snack.open(
         'No se pudo enviar la solicitud. Intenta más tarde.',
         'Cerrar',
-        { duration: 3500 }
+        { duration: 3500 },
       );
     } finally {
       this.loading.set(false);

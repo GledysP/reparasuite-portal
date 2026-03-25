@@ -52,6 +52,7 @@ export class RegisterComponent {
     {
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
+      telefono: ['', [Validators.required, Validators.minLength(7), Validators.maxLength(30)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required, Validators.minLength(6)]],
     },
@@ -77,8 +78,8 @@ export class RegisterComponent {
     this.success = '';
 
     try {
-      const { nombre, email, password } = this.form.getRawValue();
-      const message = await this.auth.register(nombre!, email!, password!);
+      const { nombre, email, telefono, password } = this.form.getRawValue();
+      const message = await this.auth.register(nombre!, email!, password!, telefono!);
 
       this.success = message;
       this.form.reset();

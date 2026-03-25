@@ -1,4 +1,10 @@
-import { Component, inject } from '@angular/core';
+import {
+  Component,
+  inject,
+  HostBinding,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -31,20 +37,76 @@ import { AuthService } from '../../core/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
 
+  @HostBinding('class.rs-keyboard-open') keyboardOpen = false;
+
   loading = false;
   error = '';
   hidePassword = true;
+
+  private baseViewportHeight =
+    typeof window !== 'undefined'
+      ? window.visualViewport?.height ?? window.innerHeight
+      : 0;
+
+  private readonly handleViewportResize = () => {
+    if (typeof window === 'undefined') return;
+
+    const currentHeight =
+      window.visualViewport?.height ?? window.innerHeight;
+
+    const delta = this.baseViewportHeight - currentHeight;
+
+    // Umbral suficiente para distinguir teclado de cambios menores de UI
+    this.keyboardOpen = delta > 140;
+  };
+
+  private readonly handleWindowResize = () => {
+    if (typeof window === 'undefined') return;
+
+    const currentHeight =
+      window.visualViewport?.height ?? window.innerHeight;
+
+    // Si el teclado no está abierto, actualizamos la referencia base
+    if (!this.keyboardOpen) {
+      this.baseViewportHeight = currentHeight;
+    }
+
+    this.handleViewportResize();
+  };
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     recordarme: [true],
   });
+
+  ngOnInit() {
+    if (typeof window === 'undefined') return;
+
+    this.baseViewportHeight =
+      window.visualViewport?.height ?? window.innerHeight;
+
+    window.visualViewport?.addEventListener(
+      'resize',
+      this.handleViewportResize
+    );
+    window.addEventListener('resize', this.handleWindowResize);
+  }
+
+  ngOnDestroy() {
+    if (typeof window === 'undefined') return;
+
+    window.visualViewport?.removeEventListener(
+      'resize',
+      this.handleViewportResize
+    );
+    window.removeEventListener('resize', this.handleWindowResize);
+  }
 
   togglePassword() {
     this.hidePassword = !this.hidePassword;

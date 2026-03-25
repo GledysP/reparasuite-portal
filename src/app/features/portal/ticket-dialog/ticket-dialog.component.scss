@@ -1,492 +1,710 @@
-$rs-primary: #124e59;
-$rs-primary-700: #0f434c;
-$rs-text: #0f172a;
-$rs-muted: #64748b;
-$rs-fill: #f4f7f9;
-$rs-border: rgba(15, 23, 42, 0.08);
-$rs-border-strong: rgba(15, 23, 42, 0.12);
-$rs-coral: #fca5a5;
+/* =========================================================
+   ReparaSuite - Nueva Solicitud / Final Mobile Luxury 10/10
+   ========================================================= */
 
-@keyframes rsShake {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-3px); }
-  40% { transform: translateX(3px); }
-  60% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
-  100% { transform: translateX(0); }
-}
-
-@keyframes rsFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.992);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-:host {
-  display: block;
-  color: $rs-text;
-  font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-.rs-ticket {
-  min-height: 100%;
-  height: 100%;
-  background: #ffffff;
-  animation: rsFadeUp 180ms ease-out both;
-}
-
-.rs-shell {
-  width: 100%;
-  max-width: 760px;
-  min-height: 100%;
-  height: 100%;
-  margin: 0 auto;
-  padding: 22px 24px 16px;
-  display: flex;
-  flex-direction: column;
-
-  @media (max-width: 640px) {
-    max-width: 100%;
-    padding:
-      calc(10px + env(safe-area-inset-top))
-      14px
-      calc(10px + env(safe-area-inset-bottom));
-  }
-}
-
-.rs-close {
-  position: absolute !important;
-  top: 16px;
-  right: 16px;
-  z-index: 5;
-  width: 42px !important;
-  height: 42px !important;
-  border-radius: 999px !important;
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06) !important;
-
-  @media (max-width: 640px) {
-    top: calc(10px + env(safe-area-inset-top));
-    right: 10px;
-  }
-}
-
-.rs-head {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 2px 44px 10px;
-  gap: 8px;
-
-  @media (max-width: 640px) {
-    padding: 2px 44px 8px;
-    gap: 7px;
-  }
-}
-
-.rs-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  background: #eef5f6;
-  color: $rs-primary;
-  display: grid;
-  place-items: center;
-
-  mat-icon {
-    font-size: 23px;
-    width: 23px;
-    height: 23px;
-    line-height: 23px;
-  }
-}
-
-.rs-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 26px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: #f3f7f8;
-  border: 1px solid rgba(18, 78, 89, 0.08);
-  color: $rs-primary;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-}
-
-.rs-head h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 950;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
-  color: $rs-text;
-
-  @media (max-width: 640px) {
-    font-size: 22px;
-  }
-}
-
-.rs-head p {
-  margin: 0;
-  max-width: 420px;
-  font-size: 14px;
-  line-height: 1.45;
-  color: $rs-muted;
-  font-weight: 500;
-}
-
-.rs-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  background: transparent;
-  padding: 12px 0 0 !important;
-
-  @media (max-width: 640px) {
-    padding-top: 10px !important;
-  }
-}
-
-.rs-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 680px;
-  margin: 0 auto;
-  min-width: 0;
-}
-
-.rs-grid {
-  display: grid;
-  gap: 10px;
-  width: 100%;
-  min-width: 0;
-}
-
-.rs-grid--top {
-  grid-template-columns: 1fr 0.92fr;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.rs-field,
-.w100 {
-  width: 100%;
-  min-width: 0;
-}
-
-.rs-field--soft {
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    background: $rs-fill !important;
-    border-radius: 15px !important;
-    box-shadow: inset 0 0 0 1px $rs-border !important;
-    transition:
-      box-shadow 160ms ease,
-      transform 160ms ease,
-      background-color 160ms ease;
-  }
-
-  ::ng-deep .mdc-notched-outline__leading,
-  ::ng-deep .mdc-notched-outline__notch,
-  ::ng-deep .mdc-notched-outline__trailing {
-    border-color: transparent !important;
-  }
-
-  ::ng-deep .mat-mdc-form-field-infix {
-    padding-top: 9px !important;
-    padding-bottom: 9px !important;
-    min-height: 38px !important;
-    display: flex;
-    align-items: center;
-  }
-
-  ::ng-deep textarea.mat-mdc-input-element {
-    resize: vertical;
-    min-height: 54px;
-  }
-
-  ::ng-deep input.mat-mdc-input-element,
-  ::ng-deep textarea.mat-mdc-input-element,
-  ::ng-deep .mat-mdc-select-value-text {
-    font-size: 14px !important;
-    font-weight: 600;
-    color: $rs-text;
-  }
-
-  ::ng-deep .mdc-floating-label,
-  ::ng-deep .mat-mdc-floating-label {
-    font-size: 11.5px !important;
-    font-weight: 700;
-    color: rgba(15, 23, 42, 0.62) !important;
-  }
-
-  ::ng-deep .mat-mdc-form-field-icon-prefix {
-    padding-right: 7px !important;
-  }
-
-  ::ng-deep .mat-mdc-form-field-icon-prefix mat-icon {
-    color: rgba(15, 23, 42, 0.46) !important;
-    font-size: 17px;
-    width: 17px;
-    height: 17px;
-  }
-
-  ::ng-deep input.mat-mdc-input-element::placeholder,
-  ::ng-deep textarea.mat-mdc-input-element::placeholder {
-    color: rgba(100, 116, 139, 0.82);
-    font-weight: 500;
-  }
-
-  ::ng-deep .mat-mdc-form-field-subscript-wrapper,
-  ::ng-deep .mat-mdc-form-field-hint-wrapper {
-    display: none !important;
-  }
-
-  &.mat-focused {
-    ::ng-deep .mat-mdc-text-field-wrapper {
-      background: #ffffff !important;
-      box-shadow:
-        inset 0 0 0 1px rgba(18, 78, 89, 0.20),
-        0 0 0 3px rgba(18, 78, 89, 0.10) !important;
-    }
-
-    ::ng-deep .mdc-floating-label {
-      color: $rs-primary !important;
-    }
-  }
-
-  &:hover {
-    ::ng-deep .mat-mdc-text-field-wrapper {
-      box-shadow:
-        inset 0 0 0 1px $rs-border-strong,
-        0 8px 18px rgba(15, 23, 42, 0.03) !important;
-    }
-  }
-}
-
-.rs-invalid {
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    box-shadow:
-      inset 0 0 0 1px rgba(239, 68, 68, 0.30),
-      0 0 0 2px rgba(252, 165, 165, 0.20) !important;
-  }
-
-  ::ng-deep .mdc-floating-label {
-    color: rgba(239, 68, 68, 0.82) !important;
-  }
-}
-
-.rs-shake {
-  animation: rsShake 220ms ease-in-out;
-}
-
-.rs-dropzone {
-  border: 1px dashed rgba(18, 78, 89, 0.20);
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 11px 12px;
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 34px;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    background 160ms ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    border-color: rgba(18, 78, 89, 0.30);
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
-  }
-
-  &.is-active {
-    border-color: rgba(18, 78, 89, 0.48);
-    box-shadow: 0 0 0 3px rgba(18, 78, 89, 0.08);
-  }
-
-  &.has-file {
-    background: rgba(18, 78, 89, 0.04);
-    border-color: rgba(18, 78, 89, 0.24);
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 42px minmax(0, 1fr);
-  }
-
-  .dz-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    background: #f7fafb;
-    border: 1px solid rgba(15, 23, 42, 0.06);
-    display: grid;
-    place-items: center;
-
-    mat-icon {
-      font-size: 19px;
-      width: 19px;
-      height: 19px;
-      line-height: 19px;
-      color: $rs-primary;
-    }
-  }
-
-  .dz-title {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 12.5px;
-    font-weight: 900;
-    color: $rs-text;
-    line-height: 1.2;
-  }
-
-  .dz-chip {
-    font-size: 10px;
-    font-weight: 900;
-    color: $rs-primary;
-    background: rgba(18, 78, 89, 0.10);
-    border: 1px solid rgba(18, 78, 89, 0.14);
-    padding: 2px 8px;
-    border-radius: 999px;
-  }
-
-  .dz-sub {
-    margin-top: 3px;
-    font-size: 10.5px;
-    font-weight: 600;
-    color: $rs-muted;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .dz-clear {
-    width: 34px !important;
-    height: 34px !important;
-    border-radius: 999px !important;
-    background: #ffffff !important;
-    border: 1px solid rgba(15, 23, 42, 0.07);
-    padding: 0 !important;
-    display: grid !important;
-    place-items: center !important;
-
-    @media (max-width: 640px) {
-      display: none !important;
-    }
-  }
-}
-
-.rs-info {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 11px 13px;
-  border-radius: 15px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: #ffffff;
-
-  mat-icon {
-    width: 17px;
-    height: 17px;
-    font-size: 17px;
-    color: $rs-primary;
-    margin-top: 1px;
-  }
-
-  p {
-    margin: 0;
-    font-size: 11.5px;
-    line-height: 1.45;
-    font-weight: 650;
-    color: #475569;
-  }
-}
-
-.rs-actions-dock {
-  position: sticky;
-  bottom: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  margin-top: 2px;
-  padding: 10px 2px calc(4px + env(safe-area-inset-bottom));
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0),
-    rgba(255,255,255,0.92) 24%,
-    rgba(255,255,255,1) 100%
-  );
-
-  .btn-primary {
-    width: 100%;
-    height: 44px !important;
-    border-radius: 999px !important;
-    font-weight: 950 !important;
-    color: #fff !important;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.08)),
-      linear-gradient(90deg, #124e59 0%, #0f434c 100%) !important;
-    box-shadow:
-      0 14px 28px rgba(18, 78, 89, 0.16),
-      0 6px 12px rgba(18, 78, 89, 0.08) !important;
-    transition:
-      transform 140ms ease,
-      box-shadow 140ms ease,
-      filter 140ms ease;
-
-    &:hover:not(:disabled) {
-      transform: translateY(-1px);
-      filter: brightness(0.995);
-    }
-
-    &:active {
-      transform: translateY(1px);
-    }
-  }
-
-  .btn-secondary {
-    height: 40px !important;
-    border-radius: 999px !important;
-    font-weight: 800 !important;
-    color: $rs-muted !important;
-  }
-
-  .mat-mdc-progress-spinner circle {
-    stroke: #fff;
-  }
-}
-
-:host ::ng-deep .rs-ticket-select-panel {
-  border-radius: 16px !important;
-  overflow: hidden;
-  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.10) !important;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-}
-
-:host ::ng-deep .mat-mdc-dialog-content {
-  max-height: none;
-}
+/* =========================
+   Variables
+   ========================= */
+   $rs-navy: #081a4b;
+   $rs-neon: #00d1ff;
+   $rs-cobalt: #007aff;
+   $rs-white: #ffffff;
+   $rs-text: #0f172a;
+   $rs-label: #b8c1cf;
+   $rs-placeholder: #c7cfdb;
+   $rs-muted: #8a97b0;
+   $rs-border: #e7ebf2;
+   $rs-border-strong: #dde4ee;
+   $rs-error: #f27f7f;
+   
+   $rs-shadow-header: 0 4px 12px rgba(0, 0, 0, 0.03);
+   $rs-shadow-field: 0 8px 30px rgba(0, 0, 0, 0.05);
+   $rs-shadow-card:
+     0 12px 24px rgba(8, 26, 75, 0.035),
+     0 0 16px rgba(0, 209, 255, 0.03);
+   $rs-shadow-cta:
+     0 14px 30px rgba(0, 122, 255, 0.16),
+     0 0 28px rgba(0, 209, 255, 0.14);
+   
+   $rs-radius-xl: 24px;
+   $rs-radius-lg: 22px;
+   $rs-radius-md: 18px;
+   $rs-radius-pill: 999px;
+   
+   /* =========================
+      Motion
+      ========================= */
+   @keyframes rsFadeInUp {
+     from {
+       opacity: 0;
+       transform: translateY(8px) scale(0.995);
+     }
+     to {
+       opacity: 1;
+       transform: translateY(0) scale(1);
+     }
+   }
+   
+   @keyframes rsFocusLineIn {
+     from {
+       opacity: 0.25;
+       transform: scaleX(0.2);
+     }
+     to {
+       opacity: 1;
+       transform: scaleX(1);
+     }
+   }
+   
+   @keyframes rsCardFloatIn {
+     from {
+       opacity: 0;
+       transform: translateY(6px) scale(0.99);
+     }
+     to {
+       opacity: 1;
+       transform: translateY(0) scale(1);
+     }
+   }
+   
+   @keyframes rsShimmer {
+     0% {
+       transform: translateX(-160%) skewX(-24deg);
+     }
+     100% {
+       transform: translateX(220%) skewX(-24deg);
+     }
+   }
+   
+   /* =========================
+      Base
+      ========================= */
+   :host {
+     display: block;
+     color: $rs-text;
+   }
+   
+   *,
+   *::before,
+   *::after {
+     box-sizing: border-box;
+   }
+   
+   /* =========================
+      Dialog
+      ========================= */
+   .rs-ticket-dialog {
+     width: 100%;
+     min-height: 100%;
+     background: $rs-white;
+     animation: rsFadeInUp 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+   }
+   
+   .rs-modal-shell {
+     width: 100%;
+     max-width: 520px;
+     margin: 0 auto;
+     background: $rs-white;
+   }
+   
+   /* =========================
+      Header premium compacto
+      ========================= */
+   .rs-header {
+     position: relative;
+     padding: calc(18px + env(safe-area-inset-top)) 24px 10px;
+     background: $rs-white;
+     box-shadow: $rs-shadow-header;
+     text-align: center;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+   
+     @media (min-width: 768px) {
+       padding: 20px 32px 12px;
+     }
+   }
+   
+   .rs-header__icon {
+     width: 34px;
+     height: 34px;
+     display: grid;
+     place-items: center;
+     border-radius: 13px;
+     background: linear-gradient(
+       180deg,
+       rgba(0, 209, 255, 0.055),
+       rgba(0, 209, 255, 0.02)
+     );
+     border: 1px solid rgba(0, 209, 255, 0.16);
+     color: $rs-navy;
+     margin-bottom: 6px;
+   
+     mat-icon {
+       width: 17px;
+       height: 17px;
+       font-size: 17px;
+       line-height: 17px;
+     }
+   }
+   
+   .rs-header__badge {
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     min-height: 20px;
+     width: fit-content;
+     padding: 3px 10px;
+     margin-bottom: 7px;
+     border-radius: $rs-radius-pill;
+     background: rgba(0, 209, 255, 0.055);
+     border: 1px solid rgba(0, 209, 255, 0.12);
+     color: $rs-navy;
+     font-size: 10px;
+     font-weight: 800;
+     letter-spacing: 0.01em;
+   }
+   
+   .rs-title {
+     margin: 0;
+     color: $rs-navy;
+     font-size: 17px;
+     line-height: 1.08;
+     letter-spacing: -0.02em;
+     font-weight: 800;
+   
+     @media (min-width: 768px) {
+       font-size: 18px;
+     }
+   }
+   
+   .rs-subtitle {
+     margin: 5px 0 0;
+     max-width: 250px;
+     color: #8e9ab0;
+     font-size: 12px;
+     line-height: 1.4;
+     font-weight: 500;
+   }
+   
+   .rs-close-inline {
+     position: absolute !important;
+     top: 50%;
+     right: 24px;
+     transform: translateY(-38%);
+     width: 34px !important;
+     height: 34px !important;
+     min-width: 34px !important;
+     min-height: 34px !important;
+     display: grid !important;
+     place-items: center !important;
+     padding: 0 !important;
+     border-radius: 999px !important;
+     background: rgba(248, 250, 252, 0.98) !important;
+     border: 1px solid rgba(8, 26, 75, 0.08);
+     box-shadow: 0 4px 12px rgba(8, 26, 75, 0.04) !important;
+     color: $rs-navy !important;
+   
+     .mat-icon {
+       margin: 0 !important;
+       width: 17px !important;
+       height: 17px !important;
+       font-size: 17px !important;
+       line-height: 17px !important;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+     }
+   
+     @media (min-width: 768px) {
+       right: 28px;
+       transform: translateY(-36%);
+     }
+   }
+   
+   /* =========================
+      Content
+      ========================= */
+   .rs-content {
+     padding: 10px 24px calc(18px + env(safe-area-inset-bottom)) !important;
+     overflow: visible;
+   
+     @media (min-width: 768px) {
+       padding: 12px 32px 24px !important;
+     }
+   }
+   
+   .rs-form {
+     display: flex;
+     flex-direction: column;
+     gap: 8px;
+   }
+   
+   .rs-grid {
+     display: grid;
+     grid-template-columns: 1fr;
+     gap: 8px;
+   }
+   
+   /* =========================
+      Fields high-tech
+      ========================= */
+   .rs-field {
+     width: 100%;
+   
+     ::ng-deep .mat-mdc-text-field-wrapper {
+       position: relative;
+       background: $rs-white !important;
+       border-radius: $rs-radius-lg !important;
+       box-shadow:
+         inset 0 0 0 1px $rs-border,
+         $rs-shadow-field !important;
+       transition:
+         box-shadow 160ms ease,
+         transform 160ms ease;
+     }
+   
+     ::ng-deep .mat-mdc-text-field-wrapper::after {
+       content: '';
+       position: absolute;
+       left: 14px;
+       right: 14px;
+       bottom: 0;
+       height: 2px;
+       border-radius: 999px;
+       background: $rs-neon;
+       opacity: 0;
+       transform: scaleX(0);
+       transform-origin: center;
+       transition:
+         transform 180ms ease,
+         opacity 180ms ease;
+     }
+   
+     ::ng-deep .mdc-notched-outline__leading,
+     ::ng-deep .mdc-notched-outline__notch,
+     ::ng-deep .mdc-notched-outline__trailing {
+       border-color: transparent !important;
+     }
+   
+     ::ng-deep .mat-mdc-form-field-flex {
+       align-items: flex-start;
+     }
+   
+     ::ng-deep .mat-mdc-form-field-infix {
+       min-height: 46px !important;
+       padding-top: 12px !important;
+       padding-bottom: 8px !important;
+     }
+   
+     ::ng-deep input.mat-mdc-input-element,
+     ::ng-deep textarea.mat-mdc-input-element,
+     ::ng-deep .mat-mdc-select-value-text {
+       color: $rs-text;
+       font-size: 13px !important;
+       font-weight: 600;
+     }
+   
+     ::ng-deep input.mat-mdc-input-element::placeholder,
+     ::ng-deep textarea.mat-mdc-input-element::placeholder {
+       color: $rs-placeholder;
+       font-weight: 500;
+     }
+   
+     ::ng-deep textarea.mat-mdc-input-element {
+       line-height: 1.34;
+       resize: none;
+       padding-top: 0;
+     }
+   
+     ::ng-deep .mdc-floating-label,
+     ::ng-deep .mat-mdc-floating-label {
+       color: $rs-label !important;
+       font-size: 11px !important;
+       font-weight: 500 !important;
+       letter-spacing: 0.01em;
+     }
+   
+     ::ng-deep .mat-mdc-form-field-icon-prefix {
+       padding-right: 10px !important;
+       padding-top: 0;
+     }
+   
+     ::ng-deep .mat-mdc-form-field-icon-prefix mat-icon {
+       width: 16px;
+       height: 16px;
+       font-size: 16px;
+       color: #aeb7c6 !important;
+       transition: color 180ms ease, filter 180ms ease;
+     }
+   
+     ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+       padding-top: 3px;
+     }
+   
+     ::ng-deep .mat-mdc-form-field-error {
+       color: $rs-error !important;
+       font-size: 10px !important;
+       line-height: 1.15 !important;
+       font-weight: 600;
+       text-transform: lowercase;
+       padding-left: 2px;
+     }
+   
+     &:hover {
+       ::ng-deep .mat-mdc-text-field-wrapper {
+         box-shadow:
+           inset 0 0 0 1px $rs-border-strong,
+           $rs-shadow-field !important;
+       }
+     }
+   
+     &.mat-focused {
+       ::ng-deep .mat-mdc-text-field-wrapper {
+         box-shadow:
+           inset 0 0 0 1px $rs-border-strong,
+           $rs-shadow-field !important;
+       }
+   
+       ::ng-deep .mat-mdc-text-field-wrapper::after {
+         opacity: 1;
+         transform: scaleX(1);
+         animation: rsFocusLineIn 180ms ease;
+       }
+   
+       ::ng-deep .mdc-floating-label,
+       ::ng-deep .mat-mdc-floating-label {
+         color: #95a4bb !important;
+         font-weight: 400 !important;
+       }
+   
+       ::ng-deep .mat-mdc-form-field-icon-prefix mat-icon {
+         color: $rs-neon !important;
+         filter: drop-shadow(0 0 8px rgba(0, 209, 255, 0.22));
+       }
+     }
+   }
+   
+   .rs-field--feature {
+     ::ng-deep .mat-mdc-text-field-wrapper {
+       box-shadow:
+         inset 0 0 0 1px rgba(0, 209, 255, 0.18),
+         $rs-shadow-field !important;
+     }
+   }
+   
+   /* =========================
+      Errors elegantes
+      ========================= */
+   .rs-invalid {
+     ::ng-deep .mat-mdc-text-field-wrapper {
+       box-shadow:
+         inset 0 0 0 1px $rs-border,
+         $rs-shadow-field !important;
+     }
+   
+     ::ng-deep .mdc-floating-label,
+     ::ng-deep .mat-mdc-floating-label {
+       color: $rs-error !important;
+     }
+   
+     ::ng-deep .mat-mdc-form-field-icon-prefix mat-icon {
+       color: $rs-error !important;
+       filter: none !important;
+     }
+   }
+   
+   /* =========================
+      Attach strip
+      ========================= */
+   .rs-attach {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     gap: 12px;
+     min-height: 56px;
+     padding: 8px 12px;
+     border-radius: $rs-radius-xl;
+     background: $rs-white;
+     box-shadow:
+       inset 0 0 0 1px $rs-border,
+       $rs-shadow-field;
+     transition: box-shadow 160ms ease;
+   
+     &.is-active {
+       box-shadow:
+         inset 0 0 0 1px rgba(0, 209, 255, 0.24),
+         $rs-shadow-field,
+         0 0 0 4px rgba(0, 209, 255, 0.05);
+     }
+   }
+   
+   .rs-attach__main {
+     display: flex;
+     align-items: center;
+     gap: 12px;
+     min-width: 0;
+   }
+   
+   .rs-attach__icon {
+     width: 34px;
+     height: 34px;
+     display: grid;
+     place-items: center;
+     border-radius: 13px;
+     background: #fbfcfe;
+     border: 1px solid $rs-border;
+     flex: 0 0 auto;
+   
+     mat-icon {
+       width: 15px;
+       height: 15px;
+       font-size: 15px;
+       color: #aab4c3;
+     }
+   }
+   
+   .rs-attach__copy {
+     min-width: 0;
+   }
+   
+   .rs-attach__title {
+     color: $rs-navy;
+     font-size: 13px;
+     font-weight: 800;
+     line-height: 1.08;
+   }
+   
+   .rs-attach__subtitle {
+     margin-top: 1px;
+     color: #8492aa;
+     font-size: 11.5px;
+     line-height: 1.24;
+     font-weight: 600;
+   }
+   
+   .rs-attach__preview {
+     flex: 0 0 auto;
+   }
+   
+   .rs-thumb {
+     position: relative;
+     width: 38px;
+     height: 38px;
+   
+     img {
+       width: 38px;
+       height: 38px;
+       display: block;
+       object-fit: cover;
+       border-radius: 50%;
+       border: 1px solid rgba(8, 26, 75, 0.08);
+       box-shadow: 0 8px 18px rgba(8, 26, 75, 0.1);
+     }
+   }
+   
+   .rs-thumb__remove {
+     position: absolute;
+     top: -5px;
+     right: -5px;
+     width: 18px;
+     height: 18px;
+     border: 0;
+     border-radius: 999px;
+     background: $rs-navy;
+     color: $rs-white;
+     display: grid;
+     place-items: center;
+     box-shadow: 0 6px 12px rgba(8, 26, 75, 0.18);
+   
+     mat-icon {
+       width: 11px;
+       height: 11px;
+       font-size: 11px;
+     }
+   }
+   
+   /* =========================
+      Glass info card premium
+      ========================= */
+   .rs-footer-note {
+     position: relative;
+     margin-top: 4px;
+     padding: 1px;
+     border-radius: $rs-radius-md;
+     background: linear-gradient(
+       135deg,
+       rgba(8, 26, 75, 0.24) 0%,
+       rgba(0, 209, 255, 0.26) 100%
+     );
+     box-shadow: $rs-shadow-card;
+     animation: rsCardFloatIn 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+     animation-delay: 0.2s;
+   }
+   
+   .rs-footer-note__content {
+     position: relative;
+     display: flex;
+     align-items: flex-start;
+     gap: 8px;
+     padding: 10px 12px;
+     border-radius: calc(#{$rs-radius-md} - 1px);
+     background: rgba(255, 255, 255, 0.9);
+     backdrop-filter: blur(14px);
+     -webkit-backdrop-filter: blur(14px);
+     overflow: hidden;
+   }
+   
+   .rs-footer-note__content::before {
+     content: '';
+     position: absolute;
+     inset: 0;
+     border-radius: inherit;
+     background: linear-gradient(
+       180deg,
+       rgba(255, 255, 255, 0.2) 0%,
+       rgba(255, 255, 255, 0.06) 44%,
+       rgba(255, 255, 255, 0.02) 100%
+     );
+     pointer-events: none;
+   }
+   
+   .rs-footer-note__icon {
+     position: relative;
+     z-index: 1;
+     width: 17px;
+     height: 17px;
+     flex: 0 0 17px;
+     display: grid;
+     place-items: center;
+     margin-top: 1px;
+   
+     mat-icon {
+       width: 15px;
+       height: 15px;
+       font-size: 15px;
+       color: #00bff5;
+       filter: drop-shadow(0 0 7px rgba(0, 209, 255, 0.14));
+     }
+   }
+   
+   .rs-footer-note__text {
+     position: relative;
+     z-index: 1;
+     color: #67758d;
+     font-size: 11.5px;
+     line-height: 1.38;
+     font-weight: 500;
+     letter-spacing: 0;
+   }
+   
+   /* =========================
+      Actions
+      ========================= */
+   .rs-actions {
+     display: flex;
+     flex-direction: column;
+     gap: 9px;
+     padding-top: 4px;
+   }
+   
+   .rs-btn {
+     width: 100%;
+     height: 46px !important;
+     border-radius: $rs-radius-pill !important;
+     font-weight: 800 !important;
+     letter-spacing: -0.01em;
+   }
+   
+   .rs-btn--secondary {
+     color: $rs-navy !important;
+     background: rgba(255, 255, 255, 0.98) !important;
+     border-color: rgba(8, 26, 75, 0.1) !important;
+     box-shadow: none !important;
+   }
+   
+   .rs-btn--primary {
+     position: relative;
+     overflow: hidden;
+     isolation: isolate;
+     color: $rs-white !important;
+     background: linear-gradient(135deg, #081a4b 0%, #00bff5 100%) !important;
+     box-shadow: $rs-shadow-cta !important;
+   
+     &:hover:not(:disabled) {
+       filter: brightness(1.02);
+     }
+   }
+   
+   .rs-btn__label {
+     position: relative;
+     z-index: 2;
+   }
+   
+   .rs-btn__shimmer {
+     position: absolute;
+     inset: 0;
+     z-index: 1;
+     pointer-events: none;
+   
+     &::before {
+       content: '';
+       position: absolute;
+       top: -20%;
+       left: -30%;
+       width: 28%;
+       height: 140%;
+       background: linear-gradient(
+         90deg,
+         rgba(255, 255, 255, 0) 0%,
+         rgba(255, 255, 255, 0.06) 30%,
+         rgba(255, 255, 255, 0.24) 50%,
+         rgba(255, 255, 255, 0.06) 70%,
+         rgba(255, 255, 255, 0) 100%
+       );
+       animation: rsShimmer 4.2s linear infinite;
+     }
+   }
+   
+   .rs-btn--primary .mat-mdc-progress-spinner circle {
+     stroke: #fff;
+   }
+   
+   /* =========================
+      Select panel blanco puro
+      ========================= */
+   :host ::ng-deep .rs-select-panel {
+     background: #ffffff !important;
+     border-radius: 18px !important;
+     overflow: hidden;
+     border: 1px solid rgba(8, 26, 75, 0.08);
+     box-shadow: 0 18px 34px rgba(8, 26, 75, 0.12) !important;
+   }
+   
+   :host ::ng-deep .rs-select-panel .mat-mdc-option {
+     background: #ffffff !important;
+     color: #0f172a !important;
+     min-height: 42px;
+   }
+   
+   :host ::ng-deep .rs-select-panel .mat-mdc-option.mdc-list-item--selected,
+   :host ::ng-deep .rs-select-panel .mat-mdc-option.mat-mdc-option-active {
+     background: #f3f4f6 !important;
+     color: #0f172a !important;
+   }
+   
+   :host ::ng-deep .rs-select-panel .mat-mdc-option:hover {
+     background: #f8fafc !important;
+   }
+   
+   :host ::ng-deep .mat-mdc-select-arrow svg {
+     fill: $rs-navy;
+     opacity: 0.72;
+   }
+   
+   /* =========================
+      Dialog overrides
+      ========================= */
+   :host ::ng-deep .mat-mdc-dialog-content {
+     max-height: none;
+   }

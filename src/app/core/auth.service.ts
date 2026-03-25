@@ -20,6 +20,7 @@ interface PortalRegisterRequest {
   nombre: string;
   email: string;
   password: string;
+  telefono: string;
 }
 
 interface PortalRegisterResponse {
@@ -75,13 +76,13 @@ export class AuthService {
     }
   }
 
-  async register(nombre: string, email: string, password: string): Promise<string> {
+  async register(nombre: string, email: string, password: string, telefono: string): Promise<string> {
     const url = `${environment.apiBaseUrl}/api/v1/portal/auth/register`;
 
     const res = await firstValueFrom(
       this.http.post<PortalRegisterResponse>(
         url,
-        { nombre, email, password } as PortalRegisterRequest
+        { nombre, email, password, telefono } as PortalRegisterRequest
       )
     );
 

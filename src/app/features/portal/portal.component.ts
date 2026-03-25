@@ -10,7 +10,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -144,7 +144,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   nowTick = signal(Date.now());
 
   msgForm = this.fb.group({
-    contenido: ['', [Validators.required, Validators.minLength(1)]],
+    contenido: [''],
   });
 
   readonly steps: { key: StepKey; label: string; icon: string }[] = [
@@ -251,12 +251,10 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     const diff = Math.max(0, now - ts);
 
     if (diff < 15000) return 'Actualizado ahora';
-
     if (diff < 60000) {
       const secs = Math.max(1, Math.floor(diff / 1000));
       return `Actualizado hace ${secs} s`;
     }
-
     if (diff < 3600000) {
       const mins = Math.floor(diff / 60000);
       return `Actualizado hace ${mins} min`;
@@ -297,16 +295,8 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     const d = new Date(value);
     const now = new Date();
 
-    const today = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    ).getTime();
-    const target = new Date(
-      d.getFullYear(),
-      d.getMonth(),
-      d.getDate()
-    ).getTime();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     const diffDays = Math.round((today - target) / 86400000);
 
     if (diffDays === 0) return 'Hoy';
@@ -322,9 +312,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   private stepFromRawStatus(statusRaw?: string | null): StepKey {
     const e = this.normalizeStatus(statusRaw);
 
-    if (
-      ['NUEVA', 'RECIBIDA', 'RECIBIDO', 'CREADA', 'REGISTRADA'].includes(e)
-    ) {
+    if (['NUEVA', 'RECIBIDA', 'RECIBIDO', 'CREADA', 'REGISTRADA'].includes(e)) {
       return 'RECIBIDA';
     }
 
@@ -344,13 +332,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     if (
-      [
-        'EN_CURSO',
-        'REPARANDO',
-        'EN_REPARACION',
-        'REPARACION',
-        'EN_PROCESO',
-      ].includes(e) ||
+      ['EN_CURSO', 'REPARANDO', 'EN_REPARACION', 'REPARACION', 'EN_PROCESO'].includes(e) ||
       e.includes('CURSO') ||
       e.includes('REPAR')
     ) {
@@ -358,14 +340,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     if (
-      [
-        'FINALIZADA',
-        'LISTO',
-        'TERMINADA',
-        'FINALIZADO',
-        'ENTREGADA',
-        'ENTREGADO',
-      ].includes(e) ||
+      ['FINALIZADA', 'LISTO', 'TERMINADA', 'FINALIZADO', 'ENTREGADA', 'ENTREGADO'].includes(e) ||
       e.includes('FINAL') ||
       e.includes('TERMIN') ||
       e.includes('LIST')
@@ -376,11 +351,56 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     return 'RECIBIDA';
   }
 
+  private friendlyStateLabel(value?: string | null): string {
+    const e = this.normalizeStatus(value);
+
+    if (['NUEVA', 'RECIBIDA', 'RECIBIDO', 'CREADA', 'REGISTRADA'].includes(e)) {
+      return 'Solicitud recibida';
+    }
+
+    if (['PRESUPUESTO', 'ENVIADO', 'PENDIENTE', 'COTIZACION'].includes(e) || e.includes('PRESUP')) {
+      return 'Presupuesto listo';
+    }
+
+    if (['APROBADA', 'ACEPTADO', 'APROBADO', 'ACEPTADA'].includes(e) || e.includes('APROB') || e.includes('ACEPT')) {
+      return 'Orden aprobada';
+    }
+
+    if (['EN_CURSO', 'REPARANDO', 'EN_REPARACION', 'REPARACION', 'EN_PROCESO'].includes(e) || e.includes('CURSO') || e.includes('REPAR')) {
+      return 'Trabajo en proceso';
+    }
+
+    if (['FINALIZADA', 'LISTO', 'TERMINADA', 'FINALIZADO', 'ENTREGADA', 'ENTREGADO'].includes(e) || e.includes('FINAL')) {
+      return 'Servicio finalizado';
+    }
+
+    if (e === 'EN_REVISION') return 'En revisión';
+    if (e === 'ABIERTO') return 'Abierto';
+    if (e === 'PROGRAMADA') return 'Programada';
+
+    return value || 'Estado';
+  }
+
   selectedOtListItem = computed<ClienteOtItemDto | null>(() => {
     const codigo = this.selectedOtCodigoSignal();
     if (!codigo) return null;
     return this.ots().find((o) => o.codigo === codigo) ?? null;
   });
+
+  visibleTickets = computed<TicketListaItemDto[]>(() => this.tickets().slice(0, 1));
+  historyTickets = computed<TicketListaItemDto[]>(() => this.tickets().slice(1));
+
+  activeServiceTitle = computed<string>(() => {
+    const ot = this.selectedOtDetalle();
+    const listItem = this.selectedOtListItem();
+    return this.getOtDisplayName(listItem, ot);
+  });
+
+  activeServiceState = computed<string>(() =>
+    this.getFriendlyTicketStatus(this.selectedOtListItem()?.estado ?? this.selectedOtDetalle()?.estado)
+  );
+
+  skeletonVisible = computed<boolean>(() => this.loading() && !this.selectedOtDetalle());
 
   private resolveBusinessStep(
     ot: OtDetalleDto | null,
@@ -415,9 +435,6 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   );
 
   stepIndex = computed(() => this.stepRank[this.stepKey()]);
-  currentStepLabel = computed(
-    () => this.steps[this.stepIndex()]?.label ?? 'Recibida'
-  );
 
   nextCita = computed<CitaDto | null>(() => {
     const ot = this.selectedOtDetalle();
@@ -430,39 +447,9 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     return sorted[0] ?? null;
   });
 
-  visibleTickets = computed<TicketListaItemDto[]>(() =>
-    this.tickets().slice(0, 2)
-  );
-  hiddenTicketCount = computed<number>(() =>
-    Math.max(0, this.tickets().length - 2)
-  );
-
   quickUnreadCount = computed<number>(() => {
     const msgs = this.selectedOtDetalle()?.mensajes ?? [];
     return msgs.filter((m) => !this.isClienteMsg(m)).length;
-  });
-
-  quickHasPendingPago = computed<boolean>(() => {
-    const ot = this.selectedOtDetalle() as any;
-    if (!ot) return false;
-
-    const presupuestoEstado = this.normalizeStatus(ot.presupuesto?.estado);
-    const pagoEstado = this.normalizeStatus(ot.pago?.estado);
-
-    const presupuestoListo = [
-      'APROBADA',
-      'ACEPTADO',
-      'APROBADO',
-      'ACEPTADA',
-    ].includes(presupuestoEstado);
-    const pagoPendiente = ![
-      'CONFIRMADO',
-      'VALIDADO',
-      'PAGADO',
-      'COMPLETADO',
-    ].includes(pagoEstado);
-
-    return presupuestoListo && pagoPendiente;
   });
 
   messageMenuItems = computed<MensajeDto[]>(() => {
@@ -484,7 +471,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
         kind: 'pending-ticket',
         icon: 'schedule',
         title: 'Solicitud en revisión',
-        subtitle: 'El taller debe aceptarla antes de crear la orden.',
+        subtitle: 'Nuestro equipo debe aceptarla antes de generar tu orden.',
       });
       return items;
     }
@@ -506,18 +493,9 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       items.push({
         kind: 'cita',
         icon: 'event',
-        title: 'Próxima cita',
-        subtitle: 'Consulta fecha y hora programadas.',
+        title: 'Próxima visita programada',
+        subtitle: 'Consulta fecha y hora confirmadas.',
         date: this.nextCita()?.inicio ?? null,
-      });
-    }
-
-    if (this.quickHasPendingPago()) {
-      items.push({
-        kind: 'pago',
-        icon: 'account_balance',
-        title: 'Pago pendiente',
-        subtitle: 'Confirma la transferencia o sube el comprobante.',
       });
     }
 
@@ -525,17 +503,15 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       items.push({
         kind: 'estado',
         icon: 'task_alt',
-        title: 'Orden finalizada',
-        subtitle: 'Tu proceso ya llegó a la última etapa.',
+        title: 'Servicio finalizado',
+        subtitle: 'Tu proceso llegó a la última etapa.',
       });
     }
 
     return items;
   });
 
-  processNotificationCount = computed<number>(
-    () => this.processNotifications().length
-  );
+  processNotificationCount = computed<number>(() => this.processNotifications().length);
 
   chatItems = computed<ChatRenderItem[]>(() => {
     const ot = this.selectedOtDetalle();
@@ -554,8 +530,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
         (prev.remitenteNombre || '').trim() ===
           (message.remitenteNombre || '').trim();
 
-      const sameDayAsPrev =
-        !!prev && this.sameLocalDay(prev.createdAt, message.createdAt);
+      const sameDayAsPrev = !!prev && this.sameLocalDay(prev.createdAt, message.createdAt);
 
       const showDayDivider = !prev || !sameDayAsPrev;
       const showMeta = !isMine && (!sameSenderAsPrev || !sameDayAsPrev);
@@ -573,6 +548,11 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
         dayLabel: this.getChatDayLabel(message.createdAt),
       };
     });
+  });
+
+  sendReady = computed<boolean>(() => {
+    const value = (this.msgForm.value.contenido ?? '').trim();
+    return value.length > 0;
   });
 
   private scrollRequested = false;
@@ -699,10 +679,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     await this.tryDetectAndOpenNewOt({ silent: true, quiet: true });
   }
 
-  private findNewOtCodigo(
-    before: Set<string>,
-    after: ClienteOtItemDto[]
-  ): string | null {
+  private findNewOtCodigo(before: Set<string>, after: ClienteOtItemDto[]): string | null {
     const created = after.find((o) => o?.codigo && !before.has(o.codigo));
     return created?.codigo ?? null;
   }
@@ -737,7 +714,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.pendingBeforeOtCodes = null;
     this.stopFastAwait();
 
-    this.snackBar.open('✓ La orden ya está disponible', undefined, {
+    this.snackBar.open('✓ Tu orden ya está disponible', undefined, {
       duration: 1800,
       panelClass: ['rs-snack-pro'],
       verticalPosition: 'bottom',
@@ -751,16 +728,49 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     return item?.id ?? item?.codigo ?? item?.fecha ?? item?.createdAt ?? index;
   }
 
-  selectedOtCodigo(): string | null {
-    return this.selectedOtDetalle()?.codigo ?? null;
-  }
-
   isClienteMsg(m: MensajeDto): boolean {
     return this.normalizeStatus(m.remitenteTipo) === 'CLIENTE';
   }
 
   getSenderName(m: MensajeDto): string {
-    return (m.remitenteNombre || '').trim() || 'Técnico';
+    return (m.remitenteNombre || '').trim() || 'Administrador';
+  }
+
+  getFriendlyTicketStatus(value?: string | null): string {
+    return this.friendlyStateLabel(value);
+  }
+
+  getOtDisplayName(
+    ot?: ClienteOtItemDto | null,
+    detail?: OtDetalleDto | null
+  ): string {
+    const candidates = [
+      (detail as any)?.equipo,
+      (detail as any)?.titulo,
+      (detail as any)?.nombreEquipo,
+      (detail as any)?.asunto,
+      (ot as any)?.equipo,
+      (ot as any)?.titulo,
+      (ot as any)?.nombreEquipo,
+      (ot as any)?.asunto,
+    ];
+
+    const found = candidates.find((v) => typeof v === 'string' && v.trim().length > 0);
+    if (found) return String(found).trim();
+
+    if (ot?.codigo) {
+      const index = this.ots().findIndex((x) => x.codigo === ot.codigo);
+      if (index >= 0) return `Servicio ${index + 1}`;
+    }
+
+    return 'Servicio';
+  }
+
+  getOtOptionLabel(ot: ClienteOtItemDto): string {
+    const detail = this.selectedOtDetalle()?.codigo === ot.codigo ? this.selectedOtDetalle() : null;
+    const name = this.getOtDisplayName(ot, detail);
+    const state = this.getFriendlyTicketStatus(ot.estado);
+    return `${name} · ${state}`;
   }
 
   focusStatus() {
@@ -866,7 +876,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
     } catch {
       if (!opts.quiet) {
-        this.snackBar.open('No se pudieron cargar las órdenes', 'Cerrar', {
+        this.snackBar.open('No se pudieron cargar tus servicios', 'Cerrar', {
           duration: 2500,
           panelClass: ['rs-snack-pro'],
         });
@@ -904,7 +914,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       if (opts.animate) this.triggerFadeIn();
     } catch {
       if (!opts.quiet) {
-        this.snackBar.open('No se pudo cargar el detalle de la OT', 'Cerrar', {
+        this.snackBar.open('No se pudo cargar el detalle del servicio', 'Cerrar', {
           duration: 2500,
           panelClass: ['rs-snack-pro'],
         });
@@ -924,7 +934,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.markSynced();
     } catch {
       if (!opts.quiet) {
-        this.snackBar.open('No se pudieron cargar los tickets', 'Cerrar', {
+        this.snackBar.open('No se pudieron cargar tus solicitudes', 'Cerrar', {
           duration: 2500,
           panelClass: ['rs-snack-pro'],
         });
@@ -994,20 +1004,11 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       const detail = await this.ticketsService.obtener(ticketId);
       this.openTicketDialog({ mode: 'view', ticket: detail });
     } catch {
-      this.snackBar.open('No se pudo cargar el ticket', 'Cerrar', {
+      this.snackBar.open('No se pudo cargar la solicitud', 'Cerrar', {
         duration: 2500,
         panelClass: ['rs-snack-pro'],
       });
     }
-  }
-
-  async selectOt(ot: ClienteOtItemDto) {
-    this.selectedOtCodigoSignal.set(ot.codigo);
-    await this.loadDetalle(ot.codigo, {
-      forceScroll: true,
-      animate: true,
-      autoNavTabs: true,
-    });
   }
 
   async onOtSelectChange(codigo: string) {
@@ -1122,8 +1123,6 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   async sendMsgOt(otId: string) {
-    if (this.msgForm.invalid) return;
-
     const contenido = (this.msgForm.value.contenido ?? '').trim();
     if (!contenido) return;
 

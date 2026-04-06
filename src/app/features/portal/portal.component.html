@@ -1,7 +1,7 @@
 <mat-toolbar class="rs-topbar">
   <div class="brand">
     <span class="brand-mark"></span>
-    <span class="brand-logo">ReparaSuite</span>
+    <span class="brand-logo">PAMBYTE</span>
   </div>
 
   <span class="spacer"></span>
@@ -22,7 +22,7 @@
       class="topbar-profile-btn"
       [matMenuTriggerFor]="profileMenu"
       aria-label="Perfil">
-      <span>{{ profileInitial() }}</span>
+      <span class="topbar-profile-char">{{ profileInitial() }}</span>
     </button>
   </div>
 </mat-toolbar>
@@ -94,37 +94,69 @@
   class="global-loader">
 </mat-progress-bar>
 
-<div class="portal-shell">
+<main class="portal-shell">
+  <!-- HOME -->
   <section class="portal-view portal-view--home" *ngIf="portalView() === 'home'">
-    <div class="hero-premium">
-      <div class="hero-premium__bg-icon" aria-hidden="true">
-        <mat-icon>precision_manufacturing</mat-icon>
+    <section class="hero-premium-vanguard hero-premium-vanguard--final" aria-label="Bienvenida PAMBYTE">
+      <div class="hero-panel-glow" aria-hidden="true"></div>
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-grid hero-grid--accent" aria-hidden="true"></div>
+      <div class="hero-copy-shield" aria-hidden="true"></div>
+
+      <div class="hero-tech-lines" aria-hidden="true">
+        <span class="hero-tech-line hero-tech-line--1"></span>
+        <span class="hero-tech-line hero-tech-line--2"></span>
+
+        <span class="hero-tech-dot hero-tech-dot--1"></span>
+        <span class="hero-tech-dot hero-tech-dot--2"></span>
       </div>
 
-      <div class="hero-premium__copy">
-        <span class="hero-premium__eyebrow">Sistema activo</span>
+      <div class="hero-content">
+        <span class="hero-status-tag">
+          <span class="status-dot"></span>
+          Sistema activo
+        </span>
 
-        <h1>
-          <span class="hero-premium__line">Bienvenida, {{ firstName() }}.</span>
-          <span class="hero-premium__line hero-premium__accent">Tu tecnología,</span>
-          <span class="hero-premium__line hero-premium__accent">en nuestras manos.</span>
+        <h1 class="hero-main-title">
+          <span class="hero-greeting hero-greeting--wave">
+            <span>Bienvenida</span>
+            <mat-icon class="hero-wave-icon">waving_hand</mat-icon>
+          </span>
+          <span class="hero-accent">Tu tecnología,</span>
+          <span class="hero-accent">en nuestras manos.</span>
         </h1>
 
-        <p>
-          Gestiona tus reparaciones de precisión y soporte técnico con transparencia absoluta.
+        <p class="hero-description">
+          Gestión técnica de precisión.
         </p>
+
+        <button mat-flat-button class="hero-cta-pill" (click)="openNewTicket()">
+          <span class="hero-cta-icon-wrap">
+            <mat-icon>add</mat-icon>
+          </span>
+          <span class="hero-cta-text">Crear solicitud de soporte</span>
+        </button>
+      </div>
+    </section>
+
+    <section
+      class="order-return-card mirror-card"
+      *ngIf="ots().length > 0"
+      aria-label="Continuar seguimiento">
+      <div class="order-return-card__copy">
+        <span class="order-return-card__eyebrow">Orden activa</span>
+        <h3>Retoma el seguimiento de tu equipo</h3>
+        <p>Vuelve exactamente a la orden activa y continúa desde su última etapa.</p>
       </div>
 
-      <button mat-flat-button class="hero-premium__cta" (click)="openNewTicket()">
-        <mat-icon>add</mat-icon>
-        <span>Crear Solicitud de Soporte</span>
+      <button mat-flat-button class="order-return-card__btn" (click)="resumeActiveOrder()">
+        <mat-icon>north_east</mat-icon>
+        <span>Retomar orden</span>
       </button>
-    </div>
+    </section>
 
     <div class="welcome-flow-list">
-      <article
-        class="welcome-flow-card mirror-card surface-card"
-        *ngFor="let item of welcomeHighlights; trackBy: trackById">
+      <article class="welcome-flow-card fade-in-entry" *ngFor="let item of welcomeHighlights; let i = index">
         <div class="welcome-flow-card__icon">
           <mat-icon>{{ item.icon }}</mat-icon>
         </div>
@@ -137,114 +169,145 @@
     </div>
   </section>
 
-  <section class="portal-view portal-view--success" *ngIf="portalView() === 'success'">
-    <div class="success-screen">
-      <div class="success-screen__glow"></div>
+  <!-- SUCCESS -->
+  <section class="portal-view portal-view--success-photo" *ngIf="portalView() === 'success'">
+    <div class="success-photo-shell">
+      <div class="success-photo-hero"></div>
 
-      <div class="success-screen__content">
-        <div class="success-check-wrap">
-          <div class="success-check-core">
+      <div class="success-photo-content">
+        <div class="success-check-wrap success-check-wrap--photo">
+          <div class="success-check-core success-check-core--photo">
             <mat-icon>check</mat-icon>
           </div>
-          <span class="success-check-orbit"></span>
+          <span class="success-check-orbit success-check-orbit--photo"></span>
         </div>
 
-        <div class="success-copy">
-          <h2>¡Solicitud Recibida con Éxito!!</h2>
-          <h3>¡Gracias por confiar en ReparaSuite!</h3>
+        <div class="success-copy success-copy--photo">
+          <h2><span>Solicitud recibida con éxito</span></h2>
+          <h3>Gracias por confiar en PAMBYTE</h3>
           <p>
-            Nuestro equipo técnico revisará los detalles de tu equipo a la brevedad.
-            Una vez procesada, podrás hacer el seguimiento completo desde tu portal principal.
+            Tu solicitud fue registrada correctamente. Nuestro equipo técnico la revisará en breve.
           </p>
         </div>
 
         <button
           mat-flat-button
           type="button"
-          class="rs-btn rs-btn--primary"
+          class="rs-btn rs-btn--primary rs-btn--success-photo"
           (click)="goHome()">
           <span class="rs-btn__shimmer"></span>
-          <span class="rs-btn__label">Ir a Inicio</span>
+          <span class="rs-btn__label">Ir a inicio</span>
         </button>
       </div>
     </div>
   </section>
 
+  <!-- ORDER -->
   <ng-container *ngIf="portalView() === 'order'">
     <section
       class="portal-view portal-view--order"
       *ngIf="selectedOtDetalle() as ot"
       [class.is-fading]="detailFade()">
 
-      <div class="order-header" #orderTopRef>
-        <div class="order-header__copy">
+      <section class="order-screen-head" #orderTopRef>
+        <div class="order-screen-head__copy">
           <h2>Estado de tu Orden</h2>
-          <p>Seguimiento técnico en tiempo real de tu solicitud actual.</p>
+          <p>Seguimiento técnico de tu servicio.</p>
         </div>
 
         <button
           mat-icon-button
-          class="order-header__plus"
+          class="order-screen-head__plus"
           (click)="openNewTicket()"
           aria-label="Nueva solicitud">
           <mat-icon>add</mat-icon>
         </button>
-      </div>
+      </section>
 
-      <div class="service-chips-row">
-        <button
-          type="button"
-          class="service-chip"
-          *ngFor="let item of ots(); trackBy: trackById"
-          [class.is-active]="selectedOtCodigoSignal() === item.codigo"
-          (click)="selectOtChip(item.codigo)">
-          <mat-icon>build_circle</mat-icon>
-          <span>{{ getOtDisplayName(item, selectedOtDetalle()?.codigo === item.codigo ? selectedOtDetalle() : null) }}</span>
-        </button>
-      </div>
+      <section class="order-equipment-block" aria-label="Equipos en soporte">
+        <div class="order-equipment-block__head">
+          <span class="order-equipment-block__title">Equipos en soporte</span>
+          <span class="order-equipment-block__count">{{ ots().length }}</span>
+        </div>
 
-      <div class="timeline-card timeline-card--luxury">
-        <div class="timeline-track">
-          <ng-container *ngFor="let step of steps; let i = index; let last = last">
-            <div class="timeline-step">
+        <div class="service-chips-row">
+          <button
+            type="button"
+            class="service-chip"
+            *ngFor="let item of ots(); trackBy: trackById"
+            [class.is-active]="selectedOtCodigoSignal() === item.codigo"
+            (click)="selectOtChip(item.codigo)">
+            <mat-icon>{{ getOtChipIcon(item, selectedOtDetalle()?.codigo === item.codigo ? selectedOtDetalle() : null) }}</mat-icon>
+            <span>{{ getOtDisplayName(item, selectedOtDetalle()?.codigo === item.codigo ? selectedOtDetalle() : null) }}</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="order-overview-card order-overview-card--editorial mirror-card surface-card">
+        <div class="timeline-card timeline-card--luxury">
+          <div class="timeline-card__glow" aria-hidden="true"></div>
+
+          <div class="timeline-card__topline">
+            <span class="timeline-card__eyebrow">Progreso operativo</span>
+            <span class="timeline-card__status">{{ serviceStatusLabel(ot) }}</span>
+          </div>
+
+          <div class="timeline-track">
+            <ng-container *ngFor="let step of steps; let i = index; let last = last">
+              <div class="timeline-step">
+                <span
+                  class="timeline-step__dot"
+                  [class.is-done]="i < stepIndex()"
+                  [class.is-active]="i === stepIndex()">
+                  <mat-icon>{{ i < stepIndex() ? 'check' : step.icon }}</mat-icon>
+                </span>
+                <span class="timeline-step__label">{{ step.label }}</span>
+              </div>
+
               <span
-                class="timeline-step__dot"
-                [class.is-done]="i < stepIndex()"
-                [class.is-active]="i === stepIndex()">
-                <mat-icon>{{ i < stepIndex() ? 'check' : step.icon }}</mat-icon>
+                *ngIf="!last"
+                class="timeline-line"
+                [class.is-done]="i < stepIndex()">
               </span>
-              <span class="timeline-step__label">{{ step.label }}</span>
-            </div>
+            </ng-container>
+          </div>
+        </div>
 
-            <span
-              *ngIf="!last"
-              class="timeline-line"
-              [class.is-done]="i < stepIndex()">
+        <div class="order-summary order-summary--premium">
+          <div class="order-summary__copy">
+            <span class="order-summary__eyebrow">Equipo activo</span>
+            <h3>{{ activeServiceTitle() }}</h3>
+            <p *ngIf="serviceMetaLine(ot)">{{ serviceMetaLine(ot) }}</p>
+          </div>
+
+          <div class="order-summary__meta">
+            <span class="order-summary__badge order-summary__badge--soft">{{ ot.codigo }}</span>
+            <span class="order-summary__badge order-summary__badge--live">
+              <span class="order-summary__pulse"></span>
+              Seguimiento activo
             </span>
-          </ng-container>
+          </div>
         </div>
-      </div>
-
-      <div class="order-summary order-summary--clean">
-        <div class="order-summary__copy">
-          <h3>{{ activeServiceTitle() }}</h3>
-          <p *ngIf="serviceMetaLine(ot)">{{ serviceMetaLine(ot) }}</p>
-        </div>
-      </div>
+      </section>
 
       <div class="order-sections">
-        <section class="section-card mirror-card surface-card" #budgetSectionRef>
+        <section class="section-card section-card--budget mirror-card" #budgetSectionRef>
           <div class="section-head">
-            <span class="section-label">Presupuesto</span>
+            <div class="section-head__copy">
+              <span class="section-label">Presupuesto</span>
+              <p class="section-hint">Diagnóstico, aprobación y detalle técnico</p>
+            </div>
           </div>
 
           <ng-container *ngIf="ot.presupuesto; else emptyBudget">
-            <div class="budget-amount">
-              <span class="budget-amount__currency">$</span>
-              <span class="budget-amount__value">{{ ot.presupuesto.importe | number:'1.2-2' }}</span>
-            </div>
+            <div class="budget-shell">
+              <div class="budget-amount">
+                <span class="budget-amount__currency">$</span>
+                <span class="budget-amount__value">{{ ot.presupuesto.importe | number:'1.2-2' }}</span>
+              </div>
 
-            <p class="budget-detail">{{ ot.presupuesto.detalle }}</p>
+              <p class="budget-detail">{{ ot.presupuesto.detalle }}</p>
+            </div>
 
             <div
               class="budget-actions"
@@ -277,7 +340,7 @@
           </ng-container>
 
           <ng-template #emptyBudget>
-            <div class="empty-module">
+            <div class="empty-module empty-module--premium">
               <div class="empty-module__icon">
                 <mat-icon>psychology</mat-icon>
               </div>
@@ -287,13 +350,16 @@
           </ng-template>
         </section>
 
-        <section class="section-card mirror-card surface-card" #citaSectionRef>
+        <section class="section-card section-card--appointment mirror-card" #citaSectionRef>
           <div class="section-head">
-            <span class="section-label">Cita</span>
+            <div class="section-head__copy">
+              <span class="section-label">Cita</span>
+              <p class="section-hint">Fecha y hora de atención programada</p>
+            </div>
           </div>
 
           <ng-container *ngIf="nextCita() as cita; else emptyCita">
-            <div class="appointment-grid">
+            <div class="appointment-grid appointment-grid--premium">
               <div class="appointment-day">
                 {{ cita.inicio | date:'dd' }}
                 <span>{{ cita.inicio | date:'MMM' }}</span>
@@ -307,7 +373,7 @@
           </ng-container>
 
           <ng-template #emptyCita>
-            <div class="empty-module">
+            <div class="empty-module empty-module--premium">
               <div class="empty-module__icon">
                 <mat-icon>event_busy</mat-icon>
               </div>
@@ -317,24 +383,27 @@
           </ng-template>
         </section>
 
-        <section class="section-card mirror-card surface-card" #paymentSectionRef>
+        <section class="section-card section-card--payment mirror-card" #paymentSectionRef>
           <div class="section-head">
-            <span class="section-label">Pago móvil</span>
+            <div class="section-head__copy">
+              <span class="section-label">Pago móvil</span>
+              <p class="section-hint">Datos de pago y confirmación de transferencia</p>
+            </div>
           </div>
 
           <div class="payment-inline">
-            <strong class="payment-data">04249264883 · 24964090 · 0102</strong>
+            <div class="payment-inline__group">
+              <strong class="payment-data">04249264883 · 24964090 · 0102</strong>
 
-            <button
-              mat-icon-button
-              class="copy-btn"
-              (click)="copyToClipboard('04249264883 24964090 0102')"
-              aria-label="Copiar datos de pago">
-              <mat-icon>content_copy</mat-icon>
-            </button>
-          </div>
+              <button
+                mat-icon-button
+                class="copy-btn"
+                (click)="copyToClipboard('04249264883 24964090 0102')"
+                aria-label="Copiar datos de pago">
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </div>
 
-          <div class="payment-actions-top">
             <button
               mat-button
               class="payment-confirm-btn"
@@ -365,12 +434,12 @@
           </div>
         </section>
 
-        <section class="section-card mirror-card surface-card" #chatSectionRef>
+        <section class="section-card section-card--chat mirror-card" #chatSectionRef>
           <div class="chat-module">
             <div class="chat-module__head">
               <div class="chat-module__titles">
                 <span class="section-label">Chat técnico</span>
-                <p>Canal activo con tu especialista</p>
+                <p>Canal de servicio</p>
               </div>
               <span class="chat-dot"></span>
             </div>
@@ -398,19 +467,21 @@
               </ng-container>
 
               <ng-template #emptyChat>
-                <div class="empty-module empty-module--chat">
+                <div class="empty-module empty-module--premium empty-module--chat">
                   <div class="empty-module__icon">
                     <mat-icon>forum</mat-icon>
                   </div>
-                  <h3>Sin mensajes todavía</h3>
+                  <h3>Sin registros aún</h3>
                   <p>Cuando exista conversación con tu técnico, aparecerá aquí.</p>
                 </div>
               </ng-template>
             </div>
 
             <div class="chat-composer">
-              <div class="chat-input-shell">
-                <mat-icon class="chat-input-shell__attach" aria-hidden="true">attach_file</mat-icon>
+              <div class="chat-input-shell chat-input-shell--minimal">
+                <button type="button" class="chat-input-shell__attach-box" aria-label="Adjuntar archivo">
+                  <mat-icon class="chat-input-shell__attach" aria-hidden="true">attach_file</mat-icon>
+                </button>
 
                 <input
                   #chatInput
@@ -421,9 +492,9 @@
                   (keydown.enter)="sendMsgOt(getCurrentOtActionId(ot))" />
 
                 <button
-                  mat-icon-button
+                  mat-flat-button
                   type="button"
-                  class="chat-send-btn"
+                  class="chat-send-btn chat-send-btn--icon"
                   (click)="sendMsgOt(getCurrentOtActionId(ot))"
                   [disabled]="!sendReady() || actionBusy()"
                   aria-label="Enviar mensaje">
@@ -436,7 +507,7 @@
       </div>
     </section>
   </ng-container>
-</div>
+</main>
 
 <nav class="bottom-nav" aria-label="Navegación principal" *ngIf="portalView() === 'order'">
   <button

@@ -8,6 +8,7 @@ import {
   AfterViewChecked,
   OnInit,
   OnDestroy,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
@@ -119,6 +120,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   portalView = signal<PortalView>('home');
   activeOrderSection = signal<OrderSection>('presupuesto');
+  lastOrderSection = signal<OrderSection>('presupuesto');
   userDisplayName = signal('Cliente');
 
   ots = signal<ClienteOtItemDto[]>([]);
@@ -240,7 +242,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
         kind: 'pending-ticket',
         icon: 'schedule',
         title: 'Solicitud recibida',
-        subtitle: 'Tu ticket fue registrado correctamente.',
+        subtitle: 'Tu solicitud fue registrada y está en validación.',
       });
     }
 
@@ -390,44 +392,201 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private resolveUserDisplayName(): string {
+    const userSources = this.resolveUserSources();
+
+    for (const source of userSources) {
+      const fullName = this.readUserFullName(source);
+      if (fullName) return fullName;
+    }
+
+    for (const source of userSources) {
+      const firstName = this.readUserFirstName(source);
+      if (firstName) return firstName;
+    }
+
+    return 'Cliente';
+  }
+
+  private resolveUserSources(): any[] {
     const authAny = this.auth as any;
 
-    const candidates: unknown[] = [
-      authAny?.currentUser?.()?.nombreCompleto,
-      authAny?.currentUser?.()?.nombre,
-      authAny?.currentUser?.()?.name,
-      authAny?.usuarioActual?.nombreCompleto,
-      authAny?.usuarioActual?.nombre,
-      authAny?.usuario?.nombreCompleto,
-      authAny?.usuario?.nombre,
-      authAny?.user?.name,
-      authAny?.user?.nombre,
-      authAny?.profile?.name,
-      authAny?.profile?.nombre,
+    const directSources = [
+      this.unwrapMaybeCallable(authAny?.currentUser),
+      this.unwrapMaybeCallable(authAny?.currentUserValue),
+      this.unwrapMaybeCallable(authAny?.getCurrentUser),
+      this.unwrapMaybeCallable(authAny?.getUser),
+      authAny?.session?.user,
+      authAny?.currentSession?.user,
+      authAny?.usuarioActual,
+      authAny?.usuario,
+      this.unwrapMaybeCallable(authAny?.user),
+      this.unwrapMaybeCallable(authAny?.userValue),
+      authAny?.profile,
+      authAny?.me,
     ];
 
-    for (const key of ['auth_user', 'user', 'session', 'currentUser', 'auth']) {
-      try {
-        const raw = localStorage.getItem(key);
-        if (!raw) continue;
-        const parsed = JSON.parse(raw);
-        candidates.push(
-          parsed?.nombreCompleto,
-          parsed?.nombre,
-          parsed?.name,
-          parsed?.usuario?.nombre,
-          parsed?.user?.name
+    const storageSources: any[] = [];
+    const storageKeys = [
+      'auth_user',
+      'currentUser',
+      'current_user',
+      'user',
+      'auth',
+      'session',
+      'profile',
+    ];
+
+    for (const key of storageKeys) {
+      for (const raw of this.readStorageCandidates(key)) {
+        const parsed = this.parseStoredJson(raw);
+        if (!parsed) continue;
+
+        storageSources.push(
+          parsed,
+          parsed?.user,
+          parsed?.usuario,
+          parsed?.profile,
+          parsed?.session?.user
         );
-      } catch {
-        // ignore
       }
     }
 
-    const found = candidates.find(
+    const tokenSources: any[] = [];
+    const tokenKeys = [
+      'token',
+      'access_token',
+      'id_token',
+      'authToken',
+      'jwt',
+      'jwtToken',
+    ];
+
+    for (const key of tokenKeys) {
+      for (const raw of this.readStorageCandidates(key)) {
+        const decoded = this.decodeJwtPayload(raw);
+        if (!decoded) continue;
+
+        tokenSources.push(
+          decoded,
+          decoded?.user,
+          decoded?.usuario,
+          decoded?.profile
+        );
+      }
+    }
+
+    return [...directSources, ...storageSources, ...tokenSources].filter(Boolean);
+  }
+
+  private unwrapMaybeCallable(value: any): any {
+    try {
+      return typeof value === 'function' ? value() : value;
+    } catch {
+      return null;
+    }
+  }
+
+  private readStorageCandidates(key: string): (string | null)[] {
+    return [
+      this.safeStorageGet(localStorage, key),
+      this.safeStorageGet(sessionStorage, key),
+    ];
+  }
+
+  private parseStoredJson(raw: string | null): any | null {
+    if (!raw) return null;
+
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  private decodeJwtPayload(token: string | null): any | null {
+    if (!token) return null;
+
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+
+    try {
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const normalized = base64.padEnd(
+        base64.length + ((4 - (base64.length % 4)) % 4),
+        '='
+      );
+
+      return JSON.parse(atob(normalized));
+    } catch {
+      return null;
+    }
+  }
+
+  private readUserFullName(source: any): string | null {
+    if (!source) return null;
+
+    return this.pickFirstString([
+      source?.nombreCompleto,
+      source?.fullName,
+      source?.displayName,
+      source?.name,
+      source?.usuario?.nombreCompleto,
+      source?.usuario?.fullName,
+      source?.usuario?.displayName,
+      source?.usuario?.name,
+      source?.user?.nombreCompleto,
+      source?.user?.fullName,
+      source?.user?.displayName,
+      source?.user?.name,
+      source?.profile?.nombreCompleto,
+      source?.profile?.fullName,
+      source?.profile?.displayName,
+      source?.profile?.name,
+    ]);
+  }
+
+  private readUserFirstName(source: any): string | null {
+    if (!source) return null;
+
+    return this.pickFirstString([
+      source?.firstName,
+      source?.first_name,
+      source?.givenName,
+      source?.given_name,
+      source?.nombre,
+      source?.nombres,
+      source?.usuario?.firstName,
+      source?.usuario?.first_name,
+      source?.usuario?.givenName,
+      source?.usuario?.given_name,
+      source?.usuario?.nombre,
+      source?.user?.firstName,
+      source?.user?.first_name,
+      source?.user?.givenName,
+      source?.user?.given_name,
+      source?.user?.nombre,
+      source?.profile?.firstName,
+      source?.profile?.first_name,
+      source?.profile?.givenName,
+      source?.profile?.given_name,
+      source?.profile?.nombre,
+    ]);
+  }
+
+  private pickFirstString(values: unknown[]): string | null {
+    const found = values.find(
       (value) => typeof value === 'string' && value.trim().length > 0
     );
 
-    return found ? String(found).trim() : 'Cliente';
+    return found ? String(found).trim() : null;
+  }
+
+  private safeStorageGet(storage: Storage, key: string): string | null {
+    try {
+      return storage.getItem(key);
+    } catch {
+      return null;
+    }
   }
 
   private normalizeStatus(value?: string | null): string {
@@ -606,19 +765,101 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     ];
 
     const found = candidates.find((v) => typeof v === 'string' && v.trim().length > 0);
-    if (found) return String(found).trim();
+    if (!found) return 'Equipo';
 
-    return 'Equipo';
+    return this.normalizeDeviceName(String(found));
+  }
+
+  getOtChipIcon(
+    ot?: ClienteOtItemDto | null,
+    detail?: OtDetalleDto | null
+  ): string {
+    const label = this.getOtDisplayName(ot, detail).toLowerCase();
+
+    if (label.includes('televisor')) return 'tv';
+    if (label.includes('cpu')) return 'memory';
+    if (label.includes('laptop') || label.includes('portátil') || label.includes('portatil')) {
+      return 'laptop_mac';
+    }
+    if (label.includes('celular') || label.includes('teléfono') || label.includes('telefono')) {
+      return 'smartphone';
+    }
+    if (label.includes('monitor')) return 'desktop_windows';
+    if (label.includes('impresora')) return 'print';
+    if (label.includes('router')) return 'router';
+    if (label.includes('consola')) return 'sports_esports';
+
+    return 'devices_other';
+  }
+
+  serviceModeLabel(ot: OtDetalleDto | null): string | null {
+    const current: any = ot ?? {};
+    return this.formatMetaLabel(
+      this.pickFirstString([
+        current?.modalidad,
+        current?.tipo,
+        current?.canal,
+        current?.servicioTipo,
+      ])
+    );
+  }
+
+  servicePriorityLabel(ot: OtDetalleDto | null): string | null {
+    const current: any = ot ?? {};
+    return this.formatMetaLabel(
+      this.pickFirstString([
+        current?.prioridad,
+        current?.nivelPrioridad,
+      ])
+    );
+  }
+
+  serviceStatusLabel(ot: OtDetalleDto | null): string {
+    return this.friendlyStateLabel((ot as any)?.estado);
   }
 
   serviceMetaLine(ot: OtDetalleDto | null): string {
-    const current: any = ot ?? {};
-    const parts: string[] = [];
-
-    if (current?.tipo) parts.push(String(current.tipo));
-    if (current?.prioridad) parts.push(String(current.prioridad));
+    const parts = [this.serviceModeLabel(ot), this.servicePriorityLabel(ot)].filter(
+      (value): value is string => !!value
+    );
 
     return parts.join(' · ');
+  }
+
+  private normalizeDeviceName(raw: string): string {
+    const value = raw.trim().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+    const lower = value.toLowerCase();
+
+    if (/(cpu|pc|computador|computadora|ordenador)/.test(lower)) return 'CPU';
+    if (/(televisor|tv|smart tv|smarttv)/.test(lower)) return 'Televisor';
+    if (/(laptop|notebook|portatil|portátil)/.test(lower)) return 'Laptop';
+    if (/(celular|telefono|teléfono|movil|móvil|smartphone)/.test(lower)) return 'Celular';
+    if (/(monitor)/.test(lower)) return 'Monitor';
+    if (/(impresora)/.test(lower)) return 'Impresora';
+    if (/(router|modem|módem)/.test(lower)) return 'Router';
+    if (/(consola|playstation|xbox|switch)/.test(lower)) return 'Consola';
+
+    return value
+      .split(' ')
+      .map((chunk) => {
+        const upper = chunk.toUpperCase();
+        if (['CPU', 'PC', 'TV'].includes(upper)) return upper === 'TV' ? 'Televisor' : upper;
+        return chunk.charAt(0).toUpperCase() + chunk.slice(1).toLowerCase();
+      })
+      .join(' ');
+  }
+
+  private formatMetaLabel(value?: string | null): string | null {
+    if (!value) return null;
+
+    const clean = value.trim().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+    if (!clean) return null;
+
+    const upper = clean.toUpperCase();
+    if (['CPU', 'PC'].includes(upper)) return upper;
+    if (upper === 'TV') return 'Televisor';
+
+    return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
   }
 
   isClienteMsg(m: MensajeDto): boolean {
@@ -633,22 +874,110 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     return ((ot as any)?.id ?? ot.codigo) as string;
   }
 
+  private setActiveOrderSection(section: OrderSection): void {
+    this.activeOrderSection.set(section);
+    this.lastOrderSection.set(section);
+  }
+
+  private getScrollTopFor(ref?: ElementRef<HTMLElement>): number | null {
+    const el = ref?.nativeElement;
+    if (!el) return null;
+
+    const top = el.getBoundingClientRect().top + window.scrollY - 86;
+    return Math.max(top, 0);
+  }
+
+  private afterOrderViewReady(task: () => void): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(task);
+    });
+  }
+
+  private sectionRef(section: OrderSection): ElementRef<HTMLElement> | undefined {
+    switch (section) {
+      case 'cita':
+        return this.citaSectionRef;
+      case 'pago':
+        return this.paymentSectionRef;
+      case 'chat':
+        return this.chatSectionRef;
+      case 'presupuesto':
+      default:
+        return this.budgetSectionRef;
+    }
+  }
+
   private scrollIntoView(
     ref: ElementRef<HTMLElement> | undefined,
     section: OrderSection
   ): void {
-    this.activeOrderSection.set(section);
-    queueMicrotask(() => {
-      ref?.nativeElement?.scrollIntoView({
+    this.setActiveOrderSection(section);
+
+    this.afterOrderViewReady(() => {
+      const top = this.getScrollTopFor(ref);
+      if (top === null) return;
+
+      window.scrollTo({
+        top,
         behavior: 'smooth',
-        block: 'start',
       });
     });
   }
 
+  @HostListener('window:scroll')
+  handleWindowScroll(): void {
+    if (this.portalView() !== 'order') return;
+
+    const threshold = 124;
+    const sections: { section: OrderSection; ref?: ElementRef<HTMLElement> }[] = [
+      { section: 'presupuesto', ref: this.budgetSectionRef },
+      { section: 'cita', ref: this.citaSectionRef },
+      { section: 'pago', ref: this.paymentSectionRef },
+      { section: 'chat', ref: this.chatSectionRef },
+    ];
+
+    let resolved: OrderSection = 'presupuesto';
+
+    for (const item of sections) {
+      const top = item.ref?.nativeElement?.getBoundingClientRect().top;
+      if (typeof top === 'number' && top <= threshold) {
+        resolved = item.section;
+      }
+    }
+
+    if (resolved !== this.activeOrderSection()) {
+      this.setActiveOrderSection(resolved);
+    }
+  }
+
   goHome(): void {
+    if (this.portalView() === 'order') {
+      this.lastOrderSection.set(this.activeOrderSection());
+    }
+
     this.portalView.set('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async resumeActiveOrder(): Promise<void> {
+    const target = this.lastOrderSection();
+
+    if (target === 'chat') {
+      await this.goToChat();
+      return;
+    }
+
+    if (target === 'cita') {
+      await this.goToCita();
+      return;
+    }
+
+    if (target === 'pago') {
+      await this.goToPago();
+      return;
+    }
+
+    await this.goToTicket();
   }
 
   async goToTicket(): Promise<void> {
@@ -656,12 +985,15 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (!ok) return;
 
     this.portalView.set('order');
-    this.activeOrderSection.set('presupuesto');
+    this.setActiveOrderSection('presupuesto');
 
-    queueMicrotask(() => {
-      this.orderTopRef?.nativeElement?.scrollIntoView({
+    this.afterOrderViewReady(() => {
+      const top = this.getScrollTopFor(this.orderTopRef);
+      if (top === null) return;
+
+      window.scrollTo({
+        top,
         behavior: 'smooth',
-        block: 'start',
       });
     });
   }
@@ -711,7 +1043,17 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       animate: true,
     });
     this.portalView.set('order');
-    this.activeOrderSection.set('presupuesto');
+    this.setActiveOrderSection('presupuesto');
+
+    this.afterOrderViewReady(() => {
+      const top = this.getScrollTopFor(this.orderTopRef);
+      if (top === null) return;
+
+      window.scrollTo({
+        top,
+        behavior: 'smooth',
+      });
+    });
   }
 
   handleProcessNotification(item: ProcessNotificationItem): void {
@@ -917,6 +1259,10 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.pendingBeforeOtCodes = null;
     this.stopFastAwait();
 
+    this.portalView.set('order');
+    this.setActiveOrderSection('presupuesto');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     this.snackBar.open('Tu orden ya está disponible', undefined, {
       duration: 1800,
       panelClass: ['rs-snack-pro'],
@@ -1068,6 +1414,9 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.pendingTicket.set(ticket);
       this.pendingBeforeOtCodes = beforeCodes;
       this.portalView.set('success');
+      this.setActiveOrderSection('presupuesto');
+
+      window.scrollTo({ top: 0, behavior: 'auto' });
 
       this.snackBar.open('Solicitud enviada correctamente', undefined, {
         duration: 1800,
@@ -1230,7 +1579,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
         forceScroll: true,
         animate: false,
       });
-      this.activeOrderSection.set('chat');
+      this.setActiveOrderSection('chat');
       setTimeout(() => this.chatInput?.nativeElement?.focus(), 120);
     } catch {
       this.snackBar.open('Error al enviar mensaje', 'Cerrar', {

@@ -17,6 +17,7 @@ export type TicketCrearPayload = {
   descripcionFalla?: string | null;
   tipoServicioSugerido?: 'TIENDA' | 'DOMICILIO' | '' | null;
   direccion?: string | null;
+  categoriasTrabajo?: string[]; // ✅ NUEVO CAMPO
 };
 
 @Injectable({ providedIn: 'root' })

@@ -24,6 +24,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips'; // ✅ NUEVO IMPORT
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -47,6 +48,7 @@ import { TicketDetalleDto } from '../../../core/models';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatChipsModule, // ✅ NUEVO
     MatSnackBarModule,
     MatProgressSpinnerModule,
   ],
@@ -71,6 +73,7 @@ export class TicketDialogComponent implements OnDestroy {
     descripcionFalla: ['', [Validators.required]],
     direccion: [''],
     observaciones: [''],
+    categoriasTrabajo: [[] as string[]], // ✅ NUEVO CONTROL (Arreglo vacío por defecto)
   });
 
   constructor(
@@ -89,6 +92,7 @@ export class TicketDialogComponent implements OnDestroy {
         observaciones: (data.ticket as any).observaciones ?? '',
         tipoServicioSugerido:
           (data.ticket as any).tipoServicioSugerido ?? '',
+        categoriasTrabajo: (data.ticket as any).categoriasTrabajo ?? [], // ✅ NUEVO
       });
 
       this.form.disable();
@@ -172,6 +176,7 @@ export class TicketDialogComponent implements OnDestroy {
       tipoServicioSugerido: raw.tipoServicioSugerido || null,
       direccion: raw.direccion || null,
       descripcion: raw.observaciones || raw.descripcionFalla,
+      categoriasTrabajo: raw.categoriasTrabajo.length > 0 ? raw.categoriasTrabajo : undefined, // ✅ NUEVO (Se envía solo si seleccionó algo)
     };
 
     try {

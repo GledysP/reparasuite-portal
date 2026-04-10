@@ -1,224 +1,239 @@
 <div class="rs-ticket-dialog">
   <div class="rs-modal-shell">
-    <div class="rs-header">
-      <button
-        mat-icon-button
-        mat-dialog-close
-        type="button"
-        aria-label="Cerrar"
-        class="rs-close-inline"
-      >
-        <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
-      </button>
+    <button
+      mat-icon-button
+      mat-dialog-close
+      type="button"
+      aria-label="Cerrar"
+      class="rs-close-inline"
+    >
+      <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+    </button>
 
-      <div class="rs-header__icon">
-        <mat-icon fontSet="material-symbols-outlined">add_task</mat-icon>
-      </div>
-
-      <div class="rs-header__badge">Soporte técnico</div>
-
-      <h1 class="rs-title">Nueva solicitud</h1>
-
-      <p class="rs-subtitle">
-        Reporta la falla de forma rápida y precisa.
-      </p>
-    </div>
-
-    <mat-dialog-content class="rs-content">
-      <form class="rs-form" [formGroup]="form" (ngSubmit)="crear()">
-        <div class="rs-grid">
-          <mat-form-field
-            appearance="outline"
-            class="rs-field"
-            [class.rs-invalid]="isInvalid('equipo')"
-          >
-            <mat-label>Equipo</mat-label>
-            <mat-icon matPrefix fontSet="material-symbols-outlined">
-              devices
-            </mat-icon>
-
-            <input
-              matInput
-              formControlName="equipo"
-              placeholder="Ej. MacBook Pro, iPhone, TV LG"
-              autocomplete="off"
-            />
-
-            <mat-error *ngIf="isInvalid('equipo')">
-              campo obligatorio
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="rs-field">
-            <mat-label>Tipo de servicio</mat-label>
-            <mat-icon matPrefix fontSet="material-symbols-outlined">
-              sell
-            </mat-icon>
-
-            <mat-select
-              formControlName="tipoServicioSugerido"
-              [panelClass]="'rs-select-panel'"
-            >
-              <mat-option value="TIENDA">En taller</mat-option>
-              <mat-option value="DOMICILIO">A domicilio</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field
-            appearance="outline"
-            class="rs-field rs-field--feature"
-            [class.rs-invalid]="isInvalid('descripcionFalla')"
-          >
-            <mat-label>Descripción de la falla</mat-label>
-            <mat-icon matPrefix fontSet="material-symbols-outlined">
-              build_circle
-            </mat-icon>
-
-            <textarea
-              matInput
-              cdkTextareaAutosize
-              cdkAutosizeMinRows="2"
-              cdkAutosizeMaxRows="4"
-              formControlName="descripcionFalla"
-              placeholder="Ej. Mi portátil se apaga a los 5 minutos de encender..."
-            ></textarea>
-
-            <mat-error *ngIf="isInvalid('descripcionFalla')">
-              describe la falla
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="rs-field">
-            <mat-label>Dirección / ubicación</mat-label>
-            <mat-icon matPrefix fontSet="material-symbols-outlined">
-              location_on
-            </mat-icon>
-
-            <textarea
-              matInput
-              cdkTextareaAutosize
-              cdkAutosizeMinRows="2"
-              cdkAutosizeMaxRows="3"
-              formControlName="direccion"
-              placeholder="Solo si aplica visita técnica"
-            ></textarea>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="rs-field">
-            <mat-label>Observaciones</mat-label>
-            <mat-icon matPrefix fontSet="material-symbols-outlined">
-              notes
-            </mat-icon>
-
-            <textarea
-              matInput
-              cdkTextareaAutosize
-              cdkAutosizeMinRows="2"
-              cdkAutosizeMaxRows="3"
-              formControlName="observaciones"
-              placeholder="Información adicional útil"
-            ></textarea>
-          </mat-form-field>
+    <div class="rs-ticket-stage">
+      <div class="rs-ticket-hero">
+        <div class="rs-header__brand">
+          <img
+            src="assets/solicitud.jpg"
+            alt="PAMBYTE"
+            class="rs-header__brand-logo"
+          />
+          <span class="rs-header__brand-word">PAMBYTE</span>
         </div>
 
-        <div
-          class="rs-attach"
-          [class.is-active]="dragActive()"
-          [class.has-file]="selectedFile()"
-          role="button"
-          tabindex="0"
-          (click)="fileInput.click()"
-          (keydown.enter)="fileInput.click()"
-          (keydown.space)="fileInput.click()"
-          (dragover)="onDragOver($event)"
-          (dragleave)="onDragLeave($event)"
-          (drop)="onDrop($event)"
-        >
-          <input
-            #fileInput
-            type="file"
-            hidden
-            accept="image/*"
-            capture="environment"
-            (change)="onFileSelected($event)"
-          />
+        <h1 class="rs-title">
+          {{ data.mode === 'view' ? 'Detalle de solicitud' : 'Nueva solicitud' }}
+        </h1>
 
-          <div class="rs-attach__main">
-            <div class="rs-attach__icon">
-              <mat-icon fontSet="material-symbols-outlined">
-                photo_camera
-              </mat-icon>
+        <p class="rs-subtitle">
+          {{
+            data.mode === 'view'
+              ? 'Consulta la información enviada para este caso.'
+              : 'Describe la falla y envía tu solicitud en menos de un minuto.'
+          }}
+        </p>
+      </div>
+
+      <mat-dialog-content class="rs-content">
+        <form class="rs-form" [formGroup]="form" (ngSubmit)="crear()">
+          <div class="rs-grid">
+            <div class="rs-field-wrap">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="rs-field"
+                [class.rs-invalid]="isInvalid('equipo')"
+              >
+                <mat-icon matPrefix fontSet="material-symbols-outlined">devices</mat-icon>
+
+                <input
+                  matInput
+                  formControlName="equipo"
+                  placeholder="Equipo"
+                  autocomplete="off"
+                />
+              </mat-form-field>
+
+              <div class="rs-inline-error" *ngIf="isInvalid('equipo')">
+                Requerido
+              </div>
             </div>
 
-            <div class="rs-attach__copy">
-              <div class="rs-attach__title">Adjuntar foto</div>
-              <div class="rs-attach__subtitle">
-                Toca o arrastra una imagen para apoyar el diagnóstico
+            <div class="rs-field-wrap" style="margin-top: 6px; margin-bottom: 10px;">
+              <mat-label class="rs-field-label">¿QUÉ SERVICIO NECESITAS?</mat-label>
+              
+              <mat-chip-listbox multiple formControlName="categoriasTrabajo" class="rs-custom-chips">
+                <mat-chip-option value="REPARACION">Reparación</mat-chip-option>
+                <mat-chip-option value="MANTENIMIENTO">Mantenimiento</mat-chip-option>
+                <mat-chip-option value="INSTALACION">Instalación</mat-chip-option>
+              </mat-chip-listbox>
+            </div>
+
+            <div class="rs-field-wrap">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="rs-field"
+              >
+                <mat-icon matPrefix fontSet="material-symbols-outlined">sell</mat-icon>
+
+                <mat-select
+                  formControlName="tipoServicioSugerido"
+                  [panelClass]="'rs-select-panel'"
+                  placeholder="Tipo de servicio"
+                >
+                  <mat-option value="TIENDA">En taller</mat-option>
+                  <mat-option value="DOMICILIO">A domicilio</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="rs-field-wrap">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="rs-field rs-field--feature"
+                [class.rs-invalid]="isInvalid('descripcionFalla')"
+              >
+                <mat-icon matPrefix fontSet="material-symbols-outlined">build_circle</mat-icon>
+
+                <textarea
+                  matInput
+                  cdkTextareaAutosize
+                  cdkAutosizeMinRows="2"
+                  cdkAutosizeMaxRows="2"
+                  formControlName="descripcionFalla"
+                  placeholder="Descripción de la falla"
+                ></textarea>
+              </mat-form-field>
+
+              <div class="rs-inline-error" *ngIf="isInvalid('descripcionFalla')">
+                Requerido
+              </div>
+            </div>
+
+            <div class="rs-field-wrap">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="rs-field"
+              >
+                <mat-icon matPrefix fontSet="material-symbols-outlined">location_on</mat-icon>
+
+                <textarea
+                  matInput
+                  cdkTextareaAutosize
+                  cdkAutosizeMinRows="1"
+                  cdkAutosizeMaxRows="2"
+                  formControlName="direccion"
+                  placeholder="Dirección / ubicación"
+                ></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="rs-field-wrap">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="rs-field"
+              >
+                <mat-icon matPrefix fontSet="material-symbols-outlined">notes</mat-icon>
+
+                <textarea
+                  matInput
+                  cdkTextareaAutosize
+                  cdkAutosizeMinRows="1"
+                  cdkAutosizeMaxRows="2"
+                  formControlName="observaciones"
+                  placeholder="Observaciones"
+                ></textarea>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div
+            class="rs-attach"
+            [class.is-active]="dragActive()"
+            [class.has-file]="selectedFile()"
+            role="button"
+            tabindex="0"
+            (click)="fileInput.click()"
+            (keydown.enter)="fileInput.click()"
+            (keydown.space)="fileInput.click()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
+            <input
+              #fileInput
+              type="file"
+              hidden
+              accept="image/*"
+              capture="environment"
+              (change)="onFileSelected($event)"
+            />
+
+            <div class="rs-attach__main">
+              <div class="rs-attach__icon">
+                <mat-icon fontSet="material-symbols-outlined">photo_camera</mat-icon>
+              </div>
+
+              <div class="rs-attach__copy">
+                <div class="rs-attach__title">Agregar foto</div>
+                <div class="rs-attach__subtitle">Opcional · mejora el diagnóstico</div>
+              </div>
+            </div>
+
+            <div class="rs-attach__preview" *ngIf="selectedFile()">
+              <div class="rs-thumb">
+                <img
+                  *ngIf="selectedFilePreview()"
+                  [src]="selectedFilePreview()!"
+                  [alt]="selectedFile()?.name || 'Adjunto'"
+                />
+
+                <button
+                  type="button"
+                  class="rs-thumb__remove"
+                  aria-label="Eliminar adjunto"
+                  (click)="$event.stopPropagation(); clearFile()"
+                >
+                  <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+                </button>
               </div>
             </div>
           </div>
 
-          <div class="rs-attach__preview" *ngIf="selectedFile()">
-            <div class="rs-thumb">
-              <img
-                *ngIf="selectedFilePreview()"
-                [src]="selectedFilePreview()!"
-                [alt]="selectedFile()?.name || 'Adjunto'"
-              />
+          <div class="rs-actions">
+            <button
+              mat-stroked-button
+              type="button"
+              mat-dialog-close
+              class="rs-btn rs-btn--secondary"
+            >
+              Cerrar
+            </button>
 
-              <button
-                type="button"
-                class="rs-thumb__remove"
-                aria-label="Eliminar adjunto"
-                (click)="$event.stopPropagation(); clearFile()"
-              >
-                <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
-              </button>
-            </div>
+            <button
+              *ngIf="data.mode !== 'view'"
+              mat-flat-button
+              type="submit"
+              class="rs-btn rs-btn--primary"
+              [disabled]="form.disabled || loading()"
+            >
+              <span class="rs-btn__shimmer"></span>
+
+              <ng-container *ngIf="!loading(); else loadingTpl">
+                <span class="rs-btn__label">Enviar solicitud</span>
+              </ng-container>
+
+              <ng-template #loadingTpl>
+                <mat-spinner diameter="18"></mat-spinner>
+              </ng-template>
+            </button>
           </div>
-        </div>
-
-        <div class="rs-footer-note">
-          <div class="rs-footer-note__content">
-            <div class="rs-footer-note__icon">
-              <mat-icon fontSet="material-symbols-outlined">info</mat-icon>
-            </div>
-
-            <div class="rs-footer-note__text">
-              Puedes enviar ahora la solicitud y luego coordinar detalles con el
-              taller.
-            </div>
-          </div>
-        </div>
-
-        <div class="rs-actions">
-          <button
-            mat-stroked-button
-            type="button"
-            mat-dialog-close
-            class="rs-btn rs-btn--secondary"
-          >
-            Cerrar
-          </button>
-
-          <button
-            mat-flat-button
-            type="submit"
-            class="rs-btn rs-btn--primary"
-            [disabled]="form.disabled || loading()"
-          >
-            <span class="rs-btn__shimmer"></span>
-
-            <ng-container *ngIf="!loading(); else loadingTpl">
-              <span class="rs-btn__label">Enviar solicitud</span>
-            </ng-container>
-
-            <ng-template #loadingTpl>
-              <mat-spinner diameter="18"></mat-spinner>
-            </ng-template>
-          </button>
-        </div>
-      </form>
-    </mat-dialog-content>
+        </form>
+      </mat-dialog-content>
+    </div>
   </div>
 </div>

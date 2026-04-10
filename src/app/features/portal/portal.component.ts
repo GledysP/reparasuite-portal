@@ -1,51 +1,44 @@
 import {
-  Component,
-  signal,
-  inject,
-  computed,
-  ViewChild,
-  ElementRef,
   AfterViewChecked,
-  OnInit,
-  OnDestroy,
+  Component,
+  ElementRef,
   HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  computed,
+  inject,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatBadgeModule } from '@angular/material/badge';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 import { AuthService } from '../../core/auth.service';
+import { decodeJwt } from '../../core/jwt';
+import {
+  CitaDto,
+  ClienteOtItemDto,
+  MensajeDto,
+  OtDetalleDto,
+  TicketDetalleDto,
+  TicketListaItemDto,
+} from '../../core/models';
 import { OtService } from '../../core/ot.service';
 import { TicketsService } from '../../core/tickets.service';
-
-import {
-  ClienteOtItemDto,
-  OtDetalleDto,
-  TicketListaItemDto,
-  TicketDetalleDto,
-  MensajeDto,
-  CitaDto,
-} from '../../core/models';
-
 import { TicketDialogComponent } from './ticket-dialog/ticket-dialog.component';
 
-type StepKey =
-  | 'RECIBIDA'
-  | 'PRESUPUESTO'
-  | 'APROBADA'
-  | 'EN_CURSO'
-  | 'FINALIZADA';
-
+type StepKey = 'RECIBIDA' | 'PRESUPUESTO' | 'APROBADA' | 'EN_CURSO' | 'FINALIZADA';
 type PortalView = 'home' | 'success' | 'order';
 type OrderSection = 'presupuesto' | 'cita' | 'pago' | 'chat';
 
@@ -78,7 +71,6 @@ type ChatRenderItem = {
   id: string | number;
   message: MensajeDto;
   isMine: boolean;
-  showAvatar: boolean;
   showMeta: boolean;
   showDayDivider: boolean;
   dayLabel: string;
@@ -112,32 +104,30 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('chatScroll') private chatContainer?: ElementRef<HTMLDivElement>;
   @ViewChild('chatInput') private chatInput?: ElementRef<HTMLInputElement>;
 
-  private fb = inject(FormBuilder);
-  private snackBar = inject(MatSnackBar);
+  private readonly fb = inject(FormBuilder);
+  private readonly snackBar = inject(MatSnackBar);
 
-  loading = signal(false);
-  actionBusy = signal(false);
+  readonly loading = signal(false);
+  readonly actionBusy = signal(false);
 
-  portalView = signal<PortalView>('home');
-  activeOrderSection = signal<OrderSection>('presupuesto');
-  lastOrderSection = signal<OrderSection>('presupuesto');
-  userDisplayName = signal('Cliente');
+  readonly portalView = signal<PortalView>('home');
+  readonly activeOrderSection = signal<OrderSection>('presupuesto');
+  readonly lastOrderSection = signal<OrderSection>('presupuesto');
+  readonly userDisplayName = signal('Cliente');
 
-  ots = signal<ClienteOtItemDto[]>([]);
-  tickets = signal<TicketListaItemDto[]>([]);
-  selectedOtDetalle = signal<OtDetalleDto | null>(null);
-  selectedOtCodigoSignal = signal<string | null>(null);
+  readonly ots = signal<ClienteOtItemDto[]>([]);
+  readonly tickets = signal<TicketListaItemDto[]>([]);
+  readonly selectedOtDetalle = signal<OtDetalleDto | null>(null);
+  readonly selectedOtCodigoSignal = signal<string | null>(null);
 
-  aceptoCheck = signal(false);
-  pagoFile = signal<File | null>(null);
-  detailFade = signal(false);
+  readonly aceptoCheck = signal(false);
+  readonly pagoFile = signal<File | null>(null);
+  readonly detailFade = signal(false);
 
-  pendingTicket = signal<TicketDetalleDto | null>(null);
-  submittedTicket = signal<TicketDetalleDto | null>(null);
-  private pendingBeforeOtCodes: Set<string> | null = null;
-  private initialEntryResolved = false;
+  readonly pendingTicket = signal<TicketDetalleDto | null>(null);
+  readonly submittedTicket = signal<TicketDetalleDto | null>(null);
 
-  msgForm = this.fb.group({
+  readonly msgForm = this.fb.group({
     contenido: [''],
   });
 
@@ -158,11 +148,11 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       id: 'step-3',
       icon: 'monitor_heart',
       title: 'Sigue todo en tiempo real',
-      desc: 'Accede a presupuestos, citas, pagos y chat directo con técnicos especializados.',
+      desc: 'Accede a presupuestos, citas, pagos y chat con técnicos especializados.',
     },
-  ];
+  ] as const;
 
-  readonly steps: { key: StepKey; label: string; icon: string }[] = [
+  readonly steps: ReadonlyArray<{ key: StepKey; label: string; icon: string }> = [
     { key: 'RECIBIDA', label: 'Recibida', icon: 'inventory_2' },
     { key: 'PRESUPUESTO', label: 'Presupuesto', icon: 'request_quote' },
     { key: 'APROBADA', label: 'Aprobada', icon: 'verified' },
@@ -170,70 +160,57 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     { key: 'FINALIZADA', label: 'Finalizada', icon: 'task_alt' },
   ];
 
-  private readonly stepRank: Record<StepKey, number> = {
-    RECIBIDA: 0,
-    PRESUPUESTO: 1,
-    APROBADA: 2,
-    EN_CURSO: 3,
-    FINALIZADA: 4,
-  };
+  readonly paymentReferenceLabel = 'Datos de transferencia';
+  readonly paymentReferenceValue = '04249264883 · 24964090 · 0102';
 
-  private detailPollHandle: ReturnType<typeof setInterval> | null = null;
-  private listPollHandle: ReturnType<typeof setInterval> | null = null;
-  private fastAwaitHandle: ReturnType<typeof setInterval> | null = null;
-  private fastAwaitUntil = 0;
-
-  private detailInFlight = false;
-  private listInFlight = false;
-
-  private visibilityHandler = () => {
-    if (document.visibilityState === 'visible') {
-      this.silentWarmRefresh();
-    }
-  };
-
-  selectedOtListItem = computed<ClienteOtItemDto | null>(() => {
+  readonly selectedOtListItem = computed<ClienteOtItemDto | null>(() => {
     const codigo = this.selectedOtCodigoSignal();
     if (!codigo) return null;
-    return this.ots().find((o) => o.codigo === codigo) ?? null;
+    return this.ots().find((item) => item.codigo === codigo) ?? null;
   });
 
-  firstName = computed(() => {
+  readonly firstName = computed(() => {
     const raw = (this.userDisplayName() || 'Cliente').trim();
     return raw.split(/\s+/)[0] || 'Cliente';
   });
 
-  profileInitial = computed(() => this.firstName().charAt(0).toUpperCase() || 'C');
+  readonly welcomeWord = computed(() => this.inferWelcomeWord(this.firstName()));
+  readonly homeWelcomeTitle = computed(() => `${this.welcomeWord()}, ${this.firstName()}`);
+  readonly profileInitial = computed(() => this.firstName().charAt(0).toUpperCase() || 'C');
 
-  activeServiceTitle = computed<string>(() => {
-    const ot = this.selectedOtDetalle();
-    const listItem = this.selectedOtListItem();
-    return this.getOtDisplayName(listItem, ot);
+  readonly activeServiceTitle = computed(() => {
+    return this.getOtDisplayName(this.selectedOtListItem(), this.selectedOtDetalle());
   });
 
-  stepKey = computed<StepKey>(() =>
+  readonly activeServiceBadges = computed(() => {
+    return this.buildServiceBadges(this.selectedOtDetalle());
+  });
+
+  readonly stepKey = computed<StepKey>(() =>
     this.resolveBusinessStep(this.selectedOtDetalle(), this.selectedOtListItem())
   );
 
-  stepIndex = computed(() => this.stepRank[this.stepKey()]);
+  readonly stepIndex = computed(() => this.stepRank[this.stepKey()]);
 
-  nextCita = computed<CitaDto | null>(() => {
-    const citas = this.selectedOtDetalle()?.citas ?? [];
+  readonly nextCita = computed<CitaDto | null>(() => {
+    const citas = [...(this.selectedOtDetalle()?.citas ?? [])];
     if (!citas.length) return null;
 
-    const sorted = [...citas].sort(
-      (a, b) => this.toMillis(a.inicio) - this.toMillis(b.inicio)
-    );
+    const visible = citas
+      .filter((item) => item.estado !== 'CANCELADA')
+      .sort((a, b) => this.toMillis(a.inicio) - this.toMillis(b.inicio));
 
-    return sorted[0] ?? null;
+    if (visible.length > 0) return visible[0];
+
+    return citas.sort((a, b) => this.toMillis(a.inicio) - this.toMillis(b.inicio))[0] ?? null;
   });
 
-  quickUnreadCount = computed<number>(() => {
-    const msgs = this.selectedOtDetalle()?.mensajes ?? [];
-    return msgs.filter((m) => !this.isClienteMsg(m)).length;
+  readonly quickUnreadCount = computed(() => {
+    const messages = this.selectedOtDetalle()?.mensajes ?? [];
+    return messages.filter((message) => !this.isClienteMsg(message)).length;
   });
 
-  processNotifications = computed<ProcessNotificationItem[]>(() => {
+  readonly processNotifications = computed<ProcessNotificationItem[]>(() => {
     const items: ProcessNotificationItem[] = [];
     const ot = this.selectedOtDetalle();
 
@@ -248,9 +225,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     if (!ot) return items;
 
-    const presupuestoEstado = this.normalizeStatus(ot.presupuesto?.estado);
-
-    if (['ENVIADO', 'PENDIENTE'].includes(presupuestoEstado)) {
+    if (ot.presupuesto?.estado === 'ENVIADO') {
       items.push({
         kind: 'presupuesto',
         icon: 'request_quote',
@@ -264,7 +239,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
         kind: 'cita',
         icon: 'event',
         title: 'Cita programada',
-        subtitle: 'Ya tienes una visita confirmada.',
+        subtitle: 'Ya tienes una fecha confirmada por el taller.',
         date: this.nextCita()?.inicio ?? null,
       });
     }
@@ -275,6 +250,15 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
         icon: 'chat_bubble_outline',
         title: 'Mensaje nuevo',
         subtitle: 'Tu técnico dejó una actualización.',
+      });
+    }
+
+    if (ot.pago?.estado === 'COMPROBANTE_SUBIDO') {
+      items.push({
+        kind: 'pago',
+        icon: 'payments',
+        title: 'Comprobante enviado',
+        subtitle: 'El taller podrá revisar tu pago.',
       });
     }
 
@@ -290,11 +274,10 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     return items;
   });
 
-  notificationBadgeCount = computed<number>(() => this.processNotifications().length);
+  readonly notificationBadgeCount = computed(() => this.processNotifications().length);
 
-  chatItems = computed<ChatRenderItem[]>(() => {
-    const ot = this.selectedOtDetalle();
-    const messages = [...(ot?.mensajes ?? [])].sort(
+  readonly chatItems = computed<ChatRenderItem[]>(() => {
+    const messages = [...(this.selectedOtDetalle()?.mensajes ?? [])].sort(
       (a, b) => this.toMillis(a.createdAt) - this.toMillis(b.createdAt)
     );
 
@@ -304,61 +287,107 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
       const sameSenderAsPrev =
         !!prev &&
-        this.normalizeStatus(prev.remitenteTipo) ===
-          this.normalizeStatus(message.remitenteTipo) &&
-        (prev.remitenteNombre || '').trim() ===
-          (message.remitenteNombre || '').trim();
+        this.normalizeStatus(prev.remitenteTipo) === this.normalizeStatus(message.remitenteTipo) &&
+        (prev.remitenteNombre || '').trim() === (message.remitenteNombre || '').trim();
 
       const sameDayAsPrev = !!prev && this.sameLocalDay(prev.createdAt, message.createdAt);
 
-      const showDayDivider = !prev || !sameDayAsPrev;
-      const showMeta = !isMine && (!sameSenderAsPrev || !sameDayAsPrev);
-
       return {
-        id:
-          (message as any)?.id ??
-          `${index}-${message.createdAt}-${message.contenido}`,
+        id: message.id || `${index}-${message.createdAt}-${message.contenido}`,
         message,
         isMine,
-        showAvatar: showMeta,
-        showMeta,
-        showDayDivider,
+        showMeta: !isMine && (!sameSenderAsPrev || !sameDayAsPrev),
+        showDayDivider: !prev || !sameDayAsPrev,
         dayLabel: this.getChatDayLabel(message.createdAt),
       };
     });
   });
 
-  sendReady = computed<boolean>(() => {
-    const value = (this.msgForm.value.contenido ?? '').trim();
-    return value.length > 0;
-  });
-
-  footerSection = computed<'home' | 'presupuesto' | 'cita' | 'pago' | 'chat'>(() => {
+  readonly footerSection = computed<'home' | 'presupuesto' | 'cita' | 'pago' | 'chat'>(() => {
     if (this.portalView() !== 'order') return 'home';
     return this.activeOrderSection();
   });
 
+  private readonly stepRank: Record<StepKey, number> = {
+    RECIBIDA: 0,
+    PRESUPUESTO: 1,
+    APROBADA: 2,
+    EN_CURSO: 3,
+    FINALIZADA: 4,
+  };
+
+  private readonly modeLabels: Record<string, string> = {
+    TIENDA: 'Tienda',
+    DOMICILIO: 'Domicilio',
+  };
+
+  private readonly priorityLabels: Record<string, string> = {
+    BAJA: 'Baja',
+    MEDIA: 'Media',
+    ALTA: 'Alta',
+  };
+
+  private readonly presupuestoLabels: Record<string, string> = {
+    BORRADOR: 'Borrador',
+    ENVIADO: 'Enviado',
+    ACEPTADO: 'Aceptado',
+    RECHAZADO: 'Rechazado',
+  };
+
+  private readonly pagoLabels: Record<string, string> = {
+    PENDIENTE: 'Pendiente',
+    MARCADO_TRANSFERENCIA: 'Pago marcado',
+    COMPROBANTE_SUBIDO: 'Comprobante subido',
+    CONFIRMADO: 'Pago confirmado',
+  };
+
+  private readonly citaLabels: Record<string, string> = {
+    PROGRAMADA: 'Programada',
+    REPROGRAMADA: 'Reprogramada',
+    CANCELADA: 'Cancelada',
+    COMPLETADA: 'Completada',
+  };
+
+  private readonly otNameCache = signal<Record<string, string>>({});
+  private readonly otPrefetchInFlight = new Set<string>();
+
+  private detailPollHandle: ReturnType<typeof setInterval> | null = null;
+  private listPollHandle: ReturnType<typeof setInterval> | null = null;
+  private fastAwaitHandle: ReturnType<typeof setInterval> | null = null;
+  private fastAwaitUntil = 0;
+
+  private detailInFlight = false;
+  private listInFlight = false;
+  private pendingBeforeOtCodes: Set<string> | null = null;
+  private initialEntryResolved = false;
+
   private scrollRequested = false;
   private scrollForce = false;
 
+  private readonly visibilityHandler = () => {
+    if (document.visibilityState === 'visible') {
+      void this.silentWarmRefresh();
+    }
+  };
+
   constructor(
-    private auth: AuthService,
-    private otService: OtService,
-    private ticketsService: TicketsService,
-    private router: Router,
-    private dialog: MatDialog
+    private readonly auth: AuthService,
+    private readonly otService: OtService,
+    private readonly ticketsService: TicketsService,
+    private readonly router: Router,
+    private readonly dialog: MatDialog
   ) {
     this.userDisplayName.set(this.resolveUserDisplayName());
-    this.refreshAll();
+    void this.refreshAll();
   }
 
   ngOnInit(): void {
     this.detailPollHandle = setInterval(() => {
-      this.pollDetailTick();
+      void this.pollDetailTick();
     }, 8000);
 
     this.listPollHandle = setInterval(() => {
-      this.pollListTick();
+      void this.pollListTick();
     }, 25000);
 
     document.addEventListener('visibilitychange', this.visibilityHandler);
@@ -387,549 +416,12 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.scrollForce = false;
   }
 
-  trackById(index: number, item: any): any {
-    return item?.id ?? item?.codigo ?? item?.fecha ?? item?.createdAt ?? index;
-  }
-
-  private resolveUserDisplayName(): string {
-    const userSources = this.resolveUserSources();
-
-    for (const source of userSources) {
-      const fullName = this.readUserFullName(source);
-      if (fullName) return fullName;
-    }
-
-    for (const source of userSources) {
-      const firstName = this.readUserFirstName(source);
-      if (firstName) return firstName;
-    }
-
-    return 'Cliente';
-  }
-
-  private resolveUserSources(): any[] {
-    const authAny = this.auth as any;
-
-    const directSources = [
-      this.unwrapMaybeCallable(authAny?.currentUser),
-      this.unwrapMaybeCallable(authAny?.currentUserValue),
-      this.unwrapMaybeCallable(authAny?.getCurrentUser),
-      this.unwrapMaybeCallable(authAny?.getUser),
-      authAny?.session?.user,
-      authAny?.currentSession?.user,
-      authAny?.usuarioActual,
-      authAny?.usuario,
-      this.unwrapMaybeCallable(authAny?.user),
-      this.unwrapMaybeCallable(authAny?.userValue),
-      authAny?.profile,
-      authAny?.me,
-    ];
-
-    const storageSources: any[] = [];
-    const storageKeys = [
-      'auth_user',
-      'currentUser',
-      'current_user',
-      'user',
-      'auth',
-      'session',
-      'profile',
-    ];
-
-    for (const key of storageKeys) {
-      for (const raw of this.readStorageCandidates(key)) {
-        const parsed = this.parseStoredJson(raw);
-        if (!parsed) continue;
-
-        storageSources.push(
-          parsed,
-          parsed?.user,
-          parsed?.usuario,
-          parsed?.profile,
-          parsed?.session?.user
-        );
-      }
-    }
-
-    const tokenSources: any[] = [];
-    const tokenKeys = [
-      'token',
-      'access_token',
-      'id_token',
-      'authToken',
-      'jwt',
-      'jwtToken',
-    ];
-
-    for (const key of tokenKeys) {
-      for (const raw of this.readStorageCandidates(key)) {
-        const decoded = this.decodeJwtPayload(raw);
-        if (!decoded) continue;
-
-        tokenSources.push(
-          decoded,
-          decoded?.user,
-          decoded?.usuario,
-          decoded?.profile
-        );
-      }
-    }
-
-    return [...directSources, ...storageSources, ...tokenSources].filter(Boolean);
-  }
-
-  private unwrapMaybeCallable(value: any): any {
-    try {
-      return typeof value === 'function' ? value() : value;
-    } catch {
-      return null;
-    }
-  }
-
-  private readStorageCandidates(key: string): (string | null)[] {
-    return [
-      this.safeStorageGet(localStorage, key),
-      this.safeStorageGet(sessionStorage, key),
-    ];
-  }
-
-  private parseStoredJson(raw: string | null): any | null {
-    if (!raw) return null;
-
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
-
-  private decodeJwtPayload(token: string | null): any | null {
-    if (!token) return null;
-
-    const parts = token.split('.');
-    if (parts.length < 2) return null;
-
-    try {
-      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-      const normalized = base64.padEnd(
-        base64.length + ((4 - (base64.length % 4)) % 4),
-        '='
-      );
-
-      return JSON.parse(atob(normalized));
-    } catch {
-      return null;
-    }
-  }
-
-  private readUserFullName(source: any): string | null {
-    if (!source) return null;
-
-    return this.pickFirstString([
-      source?.nombreCompleto,
-      source?.fullName,
-      source?.displayName,
-      source?.name,
-      source?.usuario?.nombreCompleto,
-      source?.usuario?.fullName,
-      source?.usuario?.displayName,
-      source?.usuario?.name,
-      source?.user?.nombreCompleto,
-      source?.user?.fullName,
-      source?.user?.displayName,
-      source?.user?.name,
-      source?.profile?.nombreCompleto,
-      source?.profile?.fullName,
-      source?.profile?.displayName,
-      source?.profile?.name,
-    ]);
-  }
-
-  private readUserFirstName(source: any): string | null {
-    if (!source) return null;
-
-    return this.pickFirstString([
-      source?.firstName,
-      source?.first_name,
-      source?.givenName,
-      source?.given_name,
-      source?.nombre,
-      source?.nombres,
-      source?.usuario?.firstName,
-      source?.usuario?.first_name,
-      source?.usuario?.givenName,
-      source?.usuario?.given_name,
-      source?.usuario?.nombre,
-      source?.user?.firstName,
-      source?.user?.first_name,
-      source?.user?.givenName,
-      source?.user?.given_name,
-      source?.user?.nombre,
-      source?.profile?.firstName,
-      source?.profile?.first_name,
-      source?.profile?.givenName,
-      source?.profile?.given_name,
-      source?.profile?.nombre,
-    ]);
-  }
-
-  private pickFirstString(values: unknown[]): string | null {
-    const found = values.find(
-      (value) => typeof value === 'string' && value.trim().length > 0
-    );
-
-    return found ? String(found).trim() : null;
-  }
-
-  private safeStorageGet(storage: Storage, key: string): string | null {
-    try {
-      return storage.getItem(key);
-    } catch {
-      return null;
-    }
-  }
-
-  private normalizeStatus(value?: string | null): string {
-    return (value ?? '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .toUpperCase()
-      .replace(/[\s-]+/g, '_');
-  }
-
-  private toMillis(value?: string | null): number {
-    const n = value ? new Date(value).getTime() : 0;
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  private sameLocalDay(a?: string | null, b?: string | null): boolean {
-    if (!a || !b) return false;
-    const da = new Date(a);
-    const db = new Date(b);
-
-    return (
-      da.getFullYear() === db.getFullYear() &&
-      da.getMonth() === db.getMonth() &&
-      da.getDate() === db.getDate()
-    );
-  }
-
-  private getChatDayLabel(value?: string | null): string {
-    if (!value) return '';
-    const d = new Date(value);
-    const now = new Date();
-
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    const diffDays = Math.round((today - target) / 86400000);
-
-    if (diffDays === 0) return 'Hoy';
-    if (diffDays === 1) return 'Ayer';
-
-    return d.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  }
-
-  private stepFromRawStatus(statusRaw?: string | null): StepKey {
-    const e = this.normalizeStatus(statusRaw);
-
-    if (['NUEVA', 'RECIBIDA', 'RECIBIDO', 'CREADA', 'REGISTRADA'].includes(e)) {
-      return 'RECIBIDA';
-    }
-
-    if (
-      ['PRESUPUESTO', 'ENVIADO', 'PENDIENTE', 'COTIZACION'].includes(e) ||
-      e.includes('PRESUP')
-    ) {
-      return 'PRESUPUESTO';
-    }
-
-    if (
-      ['APROBADA', 'ACEPTADO', 'APROBADO', 'ACEPTADA'].includes(e) ||
-      e.includes('APROB') ||
-      e.includes('ACEPT')
-    ) {
-      return 'APROBADA';
-    }
-
-    if (
-      ['EN_CURSO', 'REPARANDO', 'EN_REPARACION', 'REPARACION', 'EN_PROCESO'].includes(e) ||
-      e.includes('CURSO') ||
-      e.includes('REPAR')
-    ) {
-      return 'EN_CURSO';
-    }
-
-    if (
-      ['FINALIZADA', 'LISTO', 'TERMINADA', 'FINALIZADO', 'ENTREGADA', 'ENTREGADO'].includes(e) ||
-      e.includes('FINAL') ||
-      e.includes('TERMIN') ||
-      e.includes('LIST')
-    ) {
-      return 'FINALIZADA';
-    }
-
-    return 'RECIBIDA';
-  }
-
-  private friendlyStateLabel(value?: string | null): string {
-    const e = this.normalizeStatus(value);
-
-    if (['NUEVA', 'RECIBIDA', 'RECIBIDO', 'CREADA', 'REGISTRADA'].includes(e)) {
-      return 'Solicitud recibida';
-    }
-
-    if (
-      ['PRESUPUESTO', 'ENVIADO', 'PENDIENTE', 'COTIZACION'].includes(e) ||
-      e.includes('PRESUP')
-    ) {
-      return 'Presupuesto listo';
-    }
-
-    if (
-      ['APROBADA', 'ACEPTADO', 'APROBADO', 'ACEPTADA'].includes(e) ||
-      e.includes('APROB') ||
-      e.includes('ACEPT')
-    ) {
-      return 'Orden aprobada';
-    }
-
-    if (
-      ['EN_CURSO', 'REPARANDO', 'EN_REPARACION', 'REPARACION', 'EN_PROCESO'].includes(e) ||
-      e.includes('CURSO') ||
-      e.includes('REPAR')
-    ) {
-      return 'Diagnóstico en curso';
-    }
-
-    if (
-      ['FINALIZADA', 'LISTO', 'TERMINADA', 'FINALIZADO', 'ENTREGADA', 'ENTREGADO'].includes(e) ||
-      e.includes('FINAL')
-    ) {
-      return 'Servicio finalizado';
-    }
-
-    return value || 'Estado';
-  }
-
-  private resolveBusinessStep(
-    ot: OtDetalleDto | null,
-    listItem: ClienteOtItemDto | null
-  ): StepKey {
-    if (!ot && !listItem) return 'RECIBIDA';
-
-    const detailKey = this.stepFromRawStatus(ot?.estado);
-    const listKey = this.stepFromRawStatus(listItem?.estado);
-
-    let resolved =
-      this.stepRank[listKey] < this.stepRank[detailKey] ? listKey : detailKey;
-
-    const presEstado = this.normalizeStatus(ot?.presupuesto?.estado);
-
-    if (['ENVIADO', 'PENDIENTE'].includes(presEstado)) {
-      return 'PRESUPUESTO';
-    }
-
-    if (
-      ['APROBADA', 'ACEPTADO', 'APROBADO', 'ACEPTADA'].includes(presEstado) &&
-      this.stepRank[resolved] < this.stepRank.APROBADA
-    ) {
-      resolved = 'APROBADA';
-    }
-
-    return resolved;
-  }
-
-  getFriendlyTicketStatus(value?: string | null): string {
-    return this.friendlyStateLabel(value);
-  }
-
-  getOtDisplayName(
-    ot?: ClienteOtItemDto | null,
-    detail?: OtDetalleDto | null
-  ): string {
-    const candidates = [
-      (detail as any)?.equipo,
-      (detail as any)?.titulo,
-      (detail as any)?.nombreEquipo,
-      (detail as any)?.asunto,
-      (ot as any)?.equipo,
-      (ot as any)?.titulo,
-      (ot as any)?.nombreEquipo,
-      (ot as any)?.asunto,
-      (detail as any)?.descripcion,
-    ];
-
-    const found = candidates.find((v) => typeof v === 'string' && v.trim().length > 0);
-    if (!found) return 'Equipo';
-
-    return this.normalizeDeviceName(String(found));
-  }
-
-  getOtChipIcon(
-    ot?: ClienteOtItemDto | null,
-    detail?: OtDetalleDto | null
-  ): string {
-    const label = this.getOtDisplayName(ot, detail).toLowerCase();
-
-    if (label.includes('televisor')) return 'tv';
-    if (label.includes('cpu')) return 'memory';
-    if (label.includes('laptop') || label.includes('portátil') || label.includes('portatil')) {
-      return 'laptop_mac';
-    }
-    if (label.includes('celular') || label.includes('teléfono') || label.includes('telefono')) {
-      return 'smartphone';
-    }
-    if (label.includes('monitor')) return 'desktop_windows';
-    if (label.includes('impresora')) return 'print';
-    if (label.includes('router')) return 'router';
-    if (label.includes('consola')) return 'sports_esports';
-
-    return 'devices_other';
-  }
-
-  serviceModeLabel(ot: OtDetalleDto | null): string | null {
-    const current: any = ot ?? {};
-    return this.formatMetaLabel(
-      this.pickFirstString([
-        current?.modalidad,
-        current?.tipo,
-        current?.canal,
-        current?.servicioTipo,
-      ])
-    );
-  }
-
-  servicePriorityLabel(ot: OtDetalleDto | null): string | null {
-    const current: any = ot ?? {};
-    return this.formatMetaLabel(
-      this.pickFirstString([
-        current?.prioridad,
-        current?.nivelPrioridad,
-      ])
-    );
-  }
-
-  serviceStatusLabel(ot: OtDetalleDto | null): string {
-    return this.friendlyStateLabel((ot as any)?.estado);
-  }
-
-  serviceMetaLine(ot: OtDetalleDto | null): string {
-    const parts = [this.serviceModeLabel(ot), this.servicePriorityLabel(ot)].filter(
-      (value): value is string => !!value
-    );
-
-    return parts.join(' · ');
-  }
-
-  private normalizeDeviceName(raw: string): string {
-    const value = raw.trim().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
-    const lower = value.toLowerCase();
-
-    if (/(cpu|pc|computador|computadora|ordenador)/.test(lower)) return 'CPU';
-    if (/(televisor|tv|smart tv|smarttv)/.test(lower)) return 'Televisor';
-    if (/(laptop|notebook|portatil|portátil)/.test(lower)) return 'Laptop';
-    if (/(celular|telefono|teléfono|movil|móvil|smartphone)/.test(lower)) return 'Celular';
-    if (/(monitor)/.test(lower)) return 'Monitor';
-    if (/(impresora)/.test(lower)) return 'Impresora';
-    if (/(router|modem|módem)/.test(lower)) return 'Router';
-    if (/(consola|playstation|xbox|switch)/.test(lower)) return 'Consola';
-
-    return value
-      .split(' ')
-      .map((chunk) => {
-        const upper = chunk.toUpperCase();
-        if (['CPU', 'PC', 'TV'].includes(upper)) return upper === 'TV' ? 'Televisor' : upper;
-        return chunk.charAt(0).toUpperCase() + chunk.slice(1).toLowerCase();
-      })
-      .join(' ');
-  }
-
-  private formatMetaLabel(value?: string | null): string | null {
-    if (!value) return null;
-
-    const clean = value.trim().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
-    if (!clean) return null;
-
-    const upper = clean.toUpperCase();
-    if (['CPU', 'PC'].includes(upper)) return upper;
-    if (upper === 'TV') return 'Televisor';
-
-    return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
-  }
-
-  isClienteMsg(m: MensajeDto): boolean {
-    return this.normalizeStatus(m.remitenteTipo) === 'CLIENTE';
-  }
-
-  getSenderName(m: MensajeDto): string {
-    return (m.remitenteNombre || '').trim() || 'Técnico';
-  }
-
-  getCurrentOtActionId(ot: OtDetalleDto): string {
-    return ((ot as any)?.id ?? ot.codigo) as string;
-  }
-
-  private setActiveOrderSection(section: OrderSection): void {
-    this.activeOrderSection.set(section);
-    this.lastOrderSection.set(section);
-  }
-
-  private getScrollTopFor(ref?: ElementRef<HTMLElement>): number | null {
-    const el = ref?.nativeElement;
-    if (!el) return null;
-
-    const top = el.getBoundingClientRect().top + window.scrollY - 86;
-    return Math.max(top, 0);
-  }
-
-  private afterOrderViewReady(task: () => void): void {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(task);
-    });
-  }
-
-  private sectionRef(section: OrderSection): ElementRef<HTMLElement> | undefined {
-    switch (section) {
-      case 'cita':
-        return this.citaSectionRef;
-      case 'pago':
-        return this.paymentSectionRef;
-      case 'chat':
-        return this.chatSectionRef;
-      case 'presupuesto':
-      default:
-        return this.budgetSectionRef;
-    }
-  }
-
-  private scrollIntoView(
-    ref: ElementRef<HTMLElement> | undefined,
-    section: OrderSection
-  ): void {
-    this.setActiveOrderSection(section);
-
-    this.afterOrderViewReady(() => {
-      const top = this.getScrollTopFor(ref);
-      if (top === null) return;
-
-      window.scrollTo({
-        top,
-        behavior: 'smooth',
-      });
-    });
-  }
-
   @HostListener('window:scroll')
   handleWindowScroll(): void {
     if (this.portalView() !== 'order') return;
 
     const threshold = 124;
-    const sections: { section: OrderSection; ref?: ElementRef<HTMLElement> }[] = [
+    const sections: Array<{ section: OrderSection; ref?: ElementRef<HTMLElement> }> = [
       { section: 'presupuesto', ref: this.budgetSectionRef },
       { section: 'cita', ref: this.citaSectionRef },
       { section: 'pago', ref: this.paymentSectionRef },
@@ -948,6 +440,32 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (resolved !== this.activeOrderSection()) {
       this.setActiveOrderSection(resolved);
     }
+  }
+
+  trackById(index: number, item: unknown): string | number {
+    if (typeof item === 'string') return `${index}-${item}`;
+    if (typeof item === 'number') return item;
+
+    if (item && typeof item === 'object') {
+      const record = item as Record<string, unknown>;
+      const value =
+        record['id'] ??
+        record['codigo'] ??
+        record['fecha'] ??
+        record['createdAt'] ??
+        record['updatedAt'];
+
+      if (typeof value === 'string' || typeof value === 'number') {
+        return value;
+      }
+    }
+
+    return index;
+  }
+
+  sendReady(): boolean {
+    const value = (this.msgForm.value.contenido ?? '').trim();
+    return value.length > 0;
   }
 
   goHome(): void {
@@ -977,7 +495,7 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
 
-    await this.goToTicket();
+    await this.goToBudget();
   }
 
   async goToTicket(): Promise<void> {
@@ -1037,11 +555,13 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   async selectOtChip(codigo: string): Promise<void> {
     if (!codigo) return;
+
     this.selectedOtCodigoSignal.set(codigo);
     await this.loadDetalle(codigo, {
       forceScroll: false,
       animate: true,
     });
+
     this.portalView.set('order');
     this.setActiveOrderSection('presupuesto');
 
@@ -1059,352 +579,35 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   handleProcessNotification(item: ProcessNotificationItem): void {
     switch (item.kind) {
       case 'presupuesto':
-        this.goToBudget();
+        void this.goToBudget();
         break;
       case 'cita':
-        this.goToCita();
+        void this.goToCita();
         break;
       case 'pago':
-        this.goToPago();
+        void this.goToPago();
         break;
       case 'chat':
-        this.goToChat();
+        void this.goToChat();
         break;
       case 'estado':
-        this.goToTicket();
+        void this.goToTicket();
         break;
       case 'pending-ticket':
       default:
         this.portalView.set('success');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         break;
     }
   }
 
-  private requestScroll(force = false): void {
-    this.scrollRequested = true;
-    this.scrollForce = force;
-  }
-
-  private isChatNearBottom(thresholdPx = 80): boolean {
-    try {
-      const el = this.chatContainer?.nativeElement;
-      if (!el) return true;
-      const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
-      return dist < thresholdPx;
-    } catch {
-      return true;
-    }
-  }
-
-  private scrollToBottom(): void {
-    try {
-      const el = this.chatContainer?.nativeElement;
-      if (!el) return;
-      el.scrollTop = el.scrollHeight;
-    } catch {
-      // ignore
-    }
-  }
-
-  private triggerFadeIn(): void {
-    this.detailFade.set(false);
-    queueMicrotask(() => {
-      this.detailFade.set(true);
-      setTimeout(() => this.detailFade.set(false), 260);
-    });
-  }
-
-  private resolveInitialPortalView(): void {
-    if (this.pendingTicket()) return;
-
-    if (this.ots().length > 0 || this.selectedOtDetalle()) {
-      this.portalView.set('order');
-      return;
-    }
-
-    this.portalView.set('home');
-  }
-
-  private async ensureCurrentOtLoaded(): Promise<boolean> {
-    const current = this.selectedOtDetalle();
-    if (current?.codigo) return true;
-
-    const firstCodigo = this.selectedOtCodigoSignal() ?? this.ots()[0]?.codigo ?? null;
-    if (!firstCodigo) {
-      this.snackBar.open('Aún no tienes una orden disponible', 'Cerrar', {
-        duration: 2200,
-        panelClass: ['rs-snack-pro'],
-      });
-      return false;
-    }
-
-    await this.loadDetalle(firstCodigo, {
-      silent: false,
-      quiet: false,
-      forceScroll: false,
-      animate: false,
-    });
-
-    return !!this.selectedOtDetalle();
-  }
-
-  private async silentWarmRefresh(): Promise<void> {
-    await Promise.all([this.pollListTick(), this.pollDetailTick()]);
-  }
-
-  private async pollDetailTick(): Promise<void> {
-    if (this.detailInFlight || this.loading() || this.actionBusy()) return;
-
-    const codigo =
-      this.selectedOtCodigoSignal() ?? this.selectedOtDetalle()?.codigo ?? null;
-    if (!codigo) return;
-
-    this.detailInFlight = true;
-    try {
-      await this.loadDetalle(codigo, {
-        silent: true,
-        quiet: true,
-        forceScroll: false,
-        animate: false,
-      });
-    } finally {
-      this.detailInFlight = false;
-    }
-  }
-
-  private async pollListTick(): Promise<void> {
-    if (this.listInFlight || this.loading() || this.actionBusy()) return;
-
-    this.listInFlight = true;
-    try {
-      await this.loadOts({
-        silent: true,
-        quiet: true,
-        preserveSelection: true,
-        autoLoadDetalle: !this.selectedOtDetalle(),
-      });
-
-      await this.loadTickets({ silent: true, quiet: true });
-
-      if (this.pendingTicket()) {
-        await this.tryDetectAndOpenNewOt({ silent: true, quiet: true });
-      }
-    } finally {
-      this.listInFlight = false;
-    }
-  }
-
-  private stopFastAwait(): void {
-    if (this.fastAwaitHandle) clearInterval(this.fastAwaitHandle);
-    this.fastAwaitHandle = null;
-    this.fastAwaitUntil = 0;
-  }
-
-  private startFastAwait(): void {
-    this.stopFastAwait();
-    this.fastAwaitUntil = Date.now() + 120_000;
-
-    this.fastAwaitHandle = setInterval(() => {
-      this.fastAwaitTick();
-    }, 5000);
-
-    this.fastAwaitTick();
-  }
-
-  private async fastAwaitTick(): Promise<void> {
-    if (!this.pendingTicket() || !this.pendingBeforeOtCodes) {
-      this.stopFastAwait();
-      return;
-    }
-
-    if (Date.now() > this.fastAwaitUntil) {
-      this.stopFastAwait();
-      return;
-    }
-
-    await this.tryDetectAndOpenNewOt({ silent: true, quiet: true });
-  }
-
-  private findNewOtCodigo(before: Set<string>, after: ClienteOtItemDto[]): string | null {
-    const created = after.find((o) => o?.codigo && !before.has(o.codigo));
-    return created?.codigo ?? null;
-  }
-
-  private async tryDetectAndOpenNewOt(opts: {
-    silent: boolean;
-    quiet: boolean;
-  }): Promise<boolean> {
-    if (!this.pendingTicket() || !this.pendingBeforeOtCodes) return false;
-
-    await this.loadOts({
-      silent: opts.silent,
-      quiet: opts.quiet,
-      preserveSelection: true,
-      autoLoadDetalle: false,
-    });
-
-    const newCodigo = this.findNewOtCodigo(this.pendingBeforeOtCodes, this.ots());
-    if (!newCodigo) return false;
-
-    this.selectedOtCodigoSignal.set(newCodigo);
-
-    await this.loadDetalle(newCodigo, {
-      silent: true,
-      quiet: true,
-      forceScroll: false,
-      animate: false,
-    });
-
-    this.pendingTicket.set(null);
-    this.pendingBeforeOtCodes = null;
-    this.stopFastAwait();
-
-    this.portalView.set('order');
-    this.setActiveOrderSection('presupuesto');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    this.snackBar.open('Tu orden ya está disponible', undefined, {
-      duration: 1800,
-      panelClass: ['rs-snack-pro'],
-      verticalPosition: 'bottom',
-      horizontalPosition: 'center',
-    });
-
-    return true;
-  }
-
-  async refreshAll(): Promise<void> {
-    await Promise.all([
-      this.loadOts({ preserveSelection: true, autoLoadDetalle: true }),
-      this.loadTickets(),
-    ]);
-
-    if (!this.initialEntryResolved) {
-      this.resolveInitialPortalView();
-      this.initialEntryResolved = true;
-    }
-  }
-
-  async loadOts(opts: LoadOpts = {}): Promise<void> {
-    const clienteId = this.auth.getClienteId();
-    if (!clienteId) return;
-
-    const showSpinner = !opts.silent;
-    if (showSpinner) this.loading.set(true);
-
-    try {
-      const res = await this.otService.listarMisOts(0, 50);
-      this.ots.set(res.items);
-
-      const wanted = opts.preserveSelection
-        ? this.selectedOtCodigoSignal() ?? this.selectedOtDetalle()?.codigo ?? null
-        : this.selectedOtCodigoSignal() ?? null;
-
-      const exists = !!wanted && res.items.some((o) => o.codigo === wanted);
-      const nextCodigo = exists ? wanted : res.items[0]?.codigo ?? null;
-
-      this.selectedOtCodigoSignal.set(nextCodigo);
-
-      if (opts.autoLoadDetalle !== false && nextCodigo) {
-        const shouldLoad =
-          !this.selectedOtDetalle() || this.selectedOtDetalle()?.codigo !== nextCodigo;
-
-        if (shouldLoad) {
-          await this.loadDetalle(nextCodigo, {
-            silent: true,
-            quiet: opts.quiet,
-            forceScroll: false,
-            animate: false,
-          });
-        }
-      }
-
-      if (this.initialEntryResolved && !this.pendingTicket()) {
-        if (this.portalView() === 'order' && !nextCodigo) {
-          this.portalView.set('home');
-        }
-      }
-    } catch {
-      if (!opts.quiet) {
-        this.snackBar.open('No se pudieron cargar tus servicios', 'Cerrar', {
-          duration: 2500,
-          panelClass: ['rs-snack-pro'],
-        });
-      }
-    } finally {
-      if (showSpinner) this.loading.set(false);
-    }
-  }
-
-  async loadDetalle(idOrCodigo: string, opts: LoadOpts = {}): Promise<void> {
-    const showSpinner = !opts.silent;
-    if (showSpinner) this.loading.set(true);
-
-    try {
-      const prevCodigo = this.selectedOtDetalle()?.codigo ?? null;
-      const d = await this.otService.obtenerDetalle(idOrCodigo);
-
-      this.selectedOtDetalle.set(d);
-      if (d?.codigo) this.selectedOtCodigoSignal.set(d.codigo);
-
-      const sameOt = !!prevCodigo && !!d?.codigo && prevCodigo === d.codigo;
-
-      if (!opts.silent && !sameOt) {
-        this.aceptoCheck.set(false);
-      }
-
-      this.requestScroll(!!opts.forceScroll);
-
-      if (opts.animate) this.triggerFadeIn();
-    } catch {
-      if (!opts.quiet) {
-        this.snackBar.open('No se pudo cargar el detalle del servicio', 'Cerrar', {
-          duration: 2500,
-          panelClass: ['rs-snack-pro'],
-        });
-      }
-    } finally {
-      if (showSpinner) this.loading.set(false);
-    }
-  }
-
-  async loadTickets(opts: LoadOpts = {}): Promise<void> {
-    const showSpinner = !opts.silent;
-    if (showSpinner) this.loading.set(true);
-
-    try {
-      const res = await this.ticketsService.listar(0, 50);
-      this.tickets.set(res.items);
-    } catch {
-      if (!opts.quiet) {
-        this.snackBar.open('No se pudieron cargar tus solicitudes', 'Cerrar', {
-          duration: 2500,
-          panelClass: ['rs-snack-pro'],
-        });
-      }
-    } finally {
-      if (showSpinner) this.loading.set(false);
-    }
-  }
-
-  private openTicketDialog(data: {
-    mode: 'new' | 'view';
-    ticket?: TicketDetalleDto;
-  }) {
-    return this.dialog.open(TicketDialogComponent, {
-      data,
-      width: 'min(760px, 96vw)',
-      maxWidth: '96vw',
-      height: 'min(860px, 92dvh)',
-      maxHeight: '92dvh',
-      autoFocus: false,
-      restoreFocus: false,
-      panelClass: ['rs-ticket-dialog', 'rs-ticket-dialog-panel'],
-    });
-  }
-
   openNewTicket(): void {
-    const beforeCodes = new Set(this.ots().map((o) => o.codigo));
+    const beforeCodes = new Set(
+      this.ots()
+        .map((item) => String(item.codigo ?? '').trim())
+        .filter((codigo) => codigo.length > 0)
+    );
+
     const ref = this.openTicketDialog({ mode: 'new' });
 
     ref.afterClosed().subscribe(async (ticket?: TicketDetalleDto) => {
@@ -1459,16 +662,24 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   logout(): void {
-    this.auth.logout();
-    this.router.navigateByUrl('/login');
+    void this.auth.logout();
+    void this.router.navigateByUrl('/login');
   }
 
-  onPagoFileSelected(ev: Event): void {
-    const input = ev.target as HTMLInputElement;
+  onPagoFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
     this.pagoFile.set(input.files?.[0] ?? null);
   }
 
   copyToClipboard(text: string): void {
+    if (!navigator.clipboard) {
+      this.snackBar.open('Tu navegador no permite copiar automáticamente', 'Cerrar', {
+        duration: 2200,
+        panelClass: ['rs-snack-pro'],
+      });
+      return;
+    }
+
     navigator.clipboard.writeText(text).then(
       () => {
         this.snackBar.open('Copiado al portapapeles', undefined, {
@@ -1545,12 +756,12 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   async uploadComprobante(otId: string): Promise<void> {
-    const f = this.pagoFile();
-    if (!f) return;
+    const file = this.pagoFile();
+    if (!file) return;
 
     this.actionBusy.set(true);
     try {
-      await this.otService.subirComprobantePago(otId, f);
+      await this.otService.subirComprobantePago(otId, file);
       this.pagoFile.set(null);
       await this.loadDetalle(otId, { forceScroll: false, animate: false });
       this.snackBar.open('Recibo enviado correctamente', undefined, {
@@ -1567,20 +778,455 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
-  async sendMsgOt(otId: string): Promise<void> {
+  async sendMessage(): Promise<void> {
+    const ot = this.selectedOtDetalle();
+    if (!ot) return;
+
+    await this.sendMsgOt(this.getCurrentOtActionId(ot));
+  }
+
+  presupuestoEstadoLabel(value?: string | null): string {
+    return this.presupuestoLabels[this.normalizeStatus(value)] ?? 'Sin estado';
+  }
+
+  citaEstadoLabel(value?: string | null): string {
+    return this.citaLabels[this.normalizeStatus(value)] ?? 'Sin estado';
+  }
+
+  pagoEstadoLabel(value?: string | null): string {
+    return this.pagoLabels[this.normalizeStatus(value)] ?? 'Sin estado';
+  }
+
+  serviceModeLabel(ot: OtDetalleDto | null): string | null {
+    if (!ot?.tipo) return null;
+    return this.modeLabels[this.normalizeStatus(ot.tipo)] ?? this.formatLabel(ot.tipo);
+  }
+
+  servicePriorityLabel(ot: OtDetalleDto | null): string | null {
+    if (!ot?.prioridad) return null;
+    return this.priorityLabels[this.normalizeStatus(ot.prioridad)] ?? this.formatLabel(ot.prioridad);
+  }
+
+  serviceStatusLabel(ot: OtDetalleDto | null): string {
+    const status = this.normalizeStatus(ot?.estado);
+
+    switch (status) {
+      case 'RECIBIDA':
+        return 'Solicitud recibida';
+      case 'PRESUPUESTO':
+        return 'Presupuesto listo';
+      case 'APROBADA':
+        return 'Orden aprobada';
+      case 'EN_CURSO':
+        return 'En proceso';
+      case 'FINALIZADA':
+      case 'CERRADA':
+        return 'Servicio finalizado';
+      default:
+        return 'Estado';
+    }
+  }
+
+  getOtDisplayName(ot?: ClienteOtItemDto | null, detail?: OtDetalleDto | null): string {
+    const detailName = (detail?.equipo ?? '').trim();
+    if (detailName.length > 0) return detailName;
+
+    const codigo = (detail?.codigo ?? ot?.codigo ?? '').trim();
+    const cache = this.otNameCache();
+
+    if (codigo && cache[codigo]) {
+      return cache[codigo];
+    }
+
+    return 'Equipo';
+  }
+
+  getOtChipLabel(item: ClienteOtItemDto): string {
+    const selectedDetail = this.selectedOtDetalle();
+    if (selectedDetail?.codigo === item.codigo) {
+      return this.getOtDisplayName(item, selectedDetail);
+    }
+
+    const cache = this.otNameCache();
+    if (cache[item.codigo]) return cache[item.codigo];
+
+    return 'Equipo';
+  }
+
+  getOtChipIcon(ot?: ClienteOtItemDto | null, detail?: OtDetalleDto | null): string {
+    const label = this.getOtDisplayName(ot, detail).toLowerCase();
+
+    if (label.includes('televisor') || label.includes('tv')) return 'tv';
+    if (label.includes('laptop') || label.includes('portátil') || label.includes('portatil')) return 'laptop_mac';
+    if (label.includes('celular') || label.includes('teléfono') || label.includes('telefono')) return 'smartphone';
+    if (label.includes('monitor')) return 'desktop_windows';
+    if (label.includes('impresora')) return 'print';
+    if (label.includes('router') || label.includes('módem') || label.includes('modem')) return 'router';
+    if (
+      label.includes('consola') ||
+      label.includes('xbox') ||
+      label.includes('playstation') ||
+      label.includes('switch')
+    ) {
+      return 'sports_esports';
+    }
+    if (
+      label.includes('cpu') ||
+      label.includes('pc') ||
+      label.includes('computadora') ||
+      label.includes('computador')
+    ) {
+      return 'memory';
+    }
+
+    return 'devices_other';
+  }
+
+  buildServiceBadges(ot: OtDetalleDto | null): string[] {
+    if (!ot) return [];
+
+    const badges: string[] = [];
+    const mode = this.serviceModeLabel(ot);
+    const priority = this.servicePriorityLabel(ot);
+    const category = (ot.categoriaEquipoNombre ?? '').trim();
+
+    if (mode) badges.push(mode);
+    if (priority) badges.push(priority);
+    if (category) badges.push(category);
+
+    //  --- NUEVO: AÑADIR LAS CATEGORÍAS ---
+    if (ot.categoriasTrabajo && ot.categoriasTrabajo.length > 0) {
+      ot.categoriasTrabajo.forEach(cat => {
+        // FormatLabel convertirá "MANTENIMIENTO" en "Mantenimiento"
+        badges.push(this.formatLabel(cat)); 
+      });
+    }
+
+    return badges;
+  }
+
+  isClienteMsg(message: MensajeDto): boolean {
+    return this.normalizeStatus(message.remitenteTipo) === 'CLIENTE';
+  }
+
+  getSenderName(message: MensajeDto): string {
+    return (message.remitenteNombre || '').trim() || 'Técnico';
+  }
+
+  getCurrentOtActionId(ot: OtDetalleDto): string {
+    return ot.id || ot.codigo;
+  }
+
+  async refreshAll(): Promise<void> {
+    await Promise.all([
+      this.loadOts({ preserveSelection: true, autoLoadDetalle: true }),
+      this.loadTickets(),
+    ]);
+
+    if (!this.initialEntryResolved) {
+      this.resolveInitialPortalView();
+      this.initialEntryResolved = true;
+    }
+  }
+
+  private async loadOts(opts: LoadOpts = {}): Promise<void> {
+    const clienteId = this.auth.getClienteId();
+    if (!clienteId) return;
+
+    const showSpinner = !opts.silent;
+    if (showSpinner) this.loading.set(true);
+
+    try {
+      const response = await this.otService.listarMisOts(0, 50);
+      this.ots.set(response.items);
+
+      const wanted = opts.preserveSelection
+        ? this.selectedOtCodigoSignal() ?? this.selectedOtDetalle()?.codigo ?? null
+        : this.selectedOtCodigoSignal();
+
+      const exists = !!wanted && response.items.some((item) => item.codigo === wanted);
+      const nextCodigo = exists ? wanted : response.items[0]?.codigo ?? null;
+
+      this.selectedOtCodigoSignal.set(nextCodigo);
+
+      if (opts.autoLoadDetalle !== false) {
+        const shouldLoad =
+          !this.selectedOtDetalle() ||
+          (nextCodigo !== null && this.selectedOtDetalle()?.codigo !== nextCodigo);
+
+        if (shouldLoad && nextCodigo) {
+          await this.loadDetalle(nextCodigo, {
+            silent: true,
+            quiet: opts.quiet,
+            forceScroll: !!opts.forceScroll,
+            animate: !!opts.animate,
+          });
+        }
+      }
+
+      void this.prefetchOtNames(response.items);
+    } catch {
+      if (!opts.quiet) {
+        this.snackBar.open('No se pudieron cargar tus servicios', 'Cerrar', {
+          duration: 2500,
+          panelClass: ['rs-snack-pro'],
+        });
+      }
+    } finally {
+      if (showSpinner) this.loading.set(false);
+    }
+  }
+
+  private async loadTickets(opts: LoadOpts = {}): Promise<void> {
+    const clienteId = this.auth.getClienteId();
+    if (!clienteId) return;
+
+    const showSpinner = !opts.silent;
+    if (showSpinner) this.loading.set(true);
+
+    try {
+      const response = await this.ticketsService.listar(0, 50);
+      this.tickets.set(response.items);
+    } catch {
+      if (!opts.quiet) {
+        this.snackBar.open('No se pudieron cargar tus solicitudes', 'Cerrar', {
+          duration: 2500,
+          panelClass: ['rs-snack-pro'],
+        });
+      }
+    } finally {
+      if (showSpinner) this.loading.set(false);
+    }
+  }
+
+  private async loadDetalle(idOrCodigo: string, opts: LoadOpts = {}): Promise<void> {
+    const showSpinner = !opts.silent;
+    if (showSpinner) this.loading.set(true);
+
+    try {
+      const detail = await this.otService.obtenerDetalle(idOrCodigo);
+      this.selectedOtDetalle.set(detail);
+      this.selectedOtCodigoSignal.set(detail.codigo);
+      this.aceptoCheck.set(false);
+
+      const detailName = (detail.equipo ?? '').trim();
+      if (detail.codigo && detailName) {
+        this.otNameCache.update((current) => ({
+          ...current,
+          [detail.codigo]: detailName,
+        }));
+      }
+
+      if (opts.animate) {
+        this.triggerFadeIn();
+      }
+
+      if (opts.forceScroll) {
+        this.requestScroll(true);
+      }
+    } catch {
+      if (!opts.quiet) {
+        this.snackBar.open('No se pudo cargar el detalle de la orden', 'Cerrar', {
+          duration: 2500,
+          panelClass: ['rs-snack-pro'],
+        });
+      }
+    } finally {
+      if (showSpinner) this.loading.set(false);
+    }
+  }
+
+  private async prefetchOtNames(items: ClienteOtItemDto[]): Promise<void> {
+    const cache = this.otNameCache();
+    const targets = items
+      .slice(0, 8)
+      .map((item) => item.codigo)
+      .filter((codigo) => !!codigo && !cache[codigo] && !this.otPrefetchInFlight.has(codigo));
+
+    if (!targets.length) return;
+
+    await Promise.allSettled(
+      targets.map(async (codigo) => {
+        this.otPrefetchInFlight.add(codigo);
+
+        try {
+          const detail = await this.otService.obtenerDetalle(codigo);
+          const name = (detail.equipo ?? '').trim();
+
+          if (detail.codigo && name) {
+            this.otNameCache.update((current) => ({
+              ...current,
+              [detail.codigo]: name,
+            }));
+          }
+        } catch {
+          // silencioso
+        } finally {
+          this.otPrefetchInFlight.delete(codigo);
+        }
+      })
+    );
+  }
+
+  private async tryDetectAndOpenNewOt(opts: LoadOpts = {}): Promise<boolean> {
+    await this.loadOts({
+      silent: true,
+      quiet: true,
+      preserveSelection: true,
+      autoLoadDetalle: false,
+    });
+
+    const beforeCodes = this.pendingBeforeOtCodes;
+    if (!beforeCodes) return false;
+
+    const newOt = this.ots().find((item) => !beforeCodes.has(item.codigo));
+    if (!newOt?.codigo) return false;
+
+    this.pendingTicket.set(null);
+    this.pendingBeforeOtCodes = null;
+    this.stopFastAwait();
+
+    await this.loadDetalle(newOt.codigo, {
+      silent: opts.silent,
+      quiet: opts.quiet,
+      forceScroll: false,
+      animate: false,
+    });
+
+    this.portalView.set('order');
+    this.setActiveOrderSection('presupuesto');
+
+    this.afterOrderViewReady(() => {
+      const top = this.getScrollTopFor(this.orderTopRef);
+      if (top === null) return;
+
+      window.scrollTo({
+        top,
+        behavior: 'smooth',
+      });
+    });
+
+    return true;
+  }
+
+  private async ensureCurrentOtLoaded(): Promise<boolean> {
+    const current = this.selectedOtDetalle();
+    if (current?.codigo) return true;
+
+    const firstCodigo = this.selectedOtCodigoSignal() ?? this.ots()[0]?.codigo ?? null;
+    if (!firstCodigo) {
+      this.snackBar.open('Aún no tienes una orden disponible', 'Cerrar', {
+        duration: 2200,
+        panelClass: ['rs-snack-pro'],
+      });
+      return false;
+    }
+
+    await this.loadDetalle(firstCodigo, {
+      silent: false,
+      quiet: false,
+      forceScroll: false,
+      animate: false,
+    });
+
+    return !!this.selectedOtDetalle();
+  }
+
+  private async silentWarmRefresh(): Promise<void> {
+    await Promise.all([this.pollListTick(), this.pollDetailTick()]);
+  }
+
+  private async pollDetailTick(): Promise<void> {
+    if (this.detailInFlight || this.loading() || this.actionBusy()) return;
+
+    const codigo = this.selectedOtCodigoSignal() ?? this.selectedOtDetalle()?.codigo ?? null;
+    if (!codigo) return;
+
+    this.detailInFlight = true;
+    try {
+      await this.loadDetalle(codigo, {
+        silent: true,
+        quiet: true,
+        forceScroll: false,
+        animate: false,
+      });
+    } finally {
+      this.detailInFlight = false;
+    }
+  }
+
+  private async pollListTick(): Promise<void> {
+    if (this.listInFlight || this.loading() || this.actionBusy()) return;
+
+    this.listInFlight = true;
+    try {
+      await this.loadOts({
+        silent: true,
+        quiet: true,
+        preserveSelection: true,
+        autoLoadDetalle: !this.selectedOtDetalle(),
+      });
+
+      await this.loadTickets({ silent: true, quiet: true });
+
+      if (this.pendingTicket()) {
+        await this.tryDetectAndOpenNewOt({ silent: true, quiet: true });
+      }
+    } finally {
+      this.listInFlight = false;
+    }
+  }
+
+  private stopFastAwait(): void {
+    if (this.fastAwaitHandle) clearInterval(this.fastAwaitHandle);
+    this.fastAwaitHandle = null;
+    this.fastAwaitUntil = 0;
+  }
+
+  private startFastAwait(): void {
+    this.stopFastAwait();
+    this.fastAwaitUntil = Date.now() + 120_000;
+
+    this.fastAwaitHandle = setInterval(() => {
+      void this.fastAwaitTick();
+    }, 5000);
+
+    void this.fastAwaitTick();
+  }
+
+  private async fastAwaitTick(): Promise<void> {
+    if (!this.pendingTicket() || !this.pendingBeforeOtCodes) {
+      this.stopFastAwait();
+      return;
+    }
+
+    if (Date.now() > this.fastAwaitUntil) {
+      this.stopFastAwait();
+      return;
+    }
+
+    await this.tryDetectAndOpenNewOt({ silent: true, quiet: true });
+  }
+
+  private async sendMsgOt(otId: string): Promise<void> {
     const contenido = (this.msgForm.value.contenido ?? '').trim();
     if (!contenido) return;
 
     this.actionBusy.set(true);
     try {
       await this.otService.enviarMensaje(otId, contenido);
-      this.msgForm.reset();
+      this.msgForm.reset({ contenido: '' });
+
       await this.loadDetalle(otId, {
         forceScroll: true,
         animate: false,
       });
+
       this.setActiveOrderSection('chat');
-      setTimeout(() => this.chatInput?.nativeElement?.focus(), 120);
+
+      setTimeout(() => {
+        this.chatInput?.nativeElement?.focus();
+      }, 120);
     } catch {
       this.snackBar.open('Error al enviar mensaje', 'Cerrar', {
         duration: 2500,
@@ -1589,5 +1235,228 @@ export class PortalComponent implements OnInit, OnDestroy, AfterViewChecked {
     } finally {
       this.actionBusy.set(false);
     }
+  }
+
+  private openTicketDialog(data: { mode: 'new' | 'view'; ticket?: TicketDetalleDto }) {
+    return this.dialog.open(TicketDialogComponent, {
+      data,
+      width: 'min(760px, 96vw)',
+      maxWidth: '96vw',
+      height: 'min(860px, 92dvh)',
+      maxHeight: '92dvh',
+      autoFocus: false,
+      restoreFocus: false,
+      panelClass: ['rs-ticket-dialog', 'rs-ticket-dialog-panel'],
+    });
+  }
+
+  private resolveUserDisplayName(): string {
+    const token = this.auth.token();
+    if (!token) return 'Cliente';
+
+    const payload = decodeJwt(token) as {
+      nombre?: string;
+      email?: string;
+      usuario?: string;
+    };
+
+    const nombre = payload.nombre?.trim();
+    if (nombre) return nombre;
+
+    const usuario = payload.usuario?.trim();
+    if (usuario) return usuario;
+
+    const email = payload.email?.trim();
+    if (email) return email.split('@')[0];
+
+    return 'Cliente';
+  }
+
+  private inferWelcomeWord(name: string): string {
+    const n = (name || '').trim().toLowerCase();
+    if (!n) return 'Bienvenido';
+
+    const probableFemale = [
+      'a', 'ia', 'na', 'ela', 'ina', 'ana', 'iana', 'briana', 'maria',
+      'gabriela', 'valeria', 'sofia', 'camila', 'paula', 'laura',
+    ];
+
+    if (probableFemale.some((item) => n.endsWith(item))) {
+      return 'Bienvenida';
+    }
+
+    return 'Bienvenido';
+  }
+
+  private resolveBusinessStep(
+    ot: OtDetalleDto | null,
+    listItem: ClienteOtItemDto | null
+  ): StepKey {
+    if (!ot && !listItem) return 'RECIBIDA';
+
+    const detailKey = this.stepFromRawStatus(ot?.estado);
+    const listKey = this.stepFromRawStatus(listItem?.estado);
+
+    let resolved =
+      this.stepRank[listKey] < this.stepRank[detailKey] ? listKey : detailKey;
+
+    if (ot?.presupuesto?.estado === 'ENVIADO') {
+      return 'PRESUPUESTO';
+    }
+
+    if (ot?.presupuesto?.estado === 'ACEPTADO' && this.stepRank[resolved] < this.stepRank.APROBADA) {
+      resolved = 'APROBADA';
+    }
+
+    return resolved;
+  }
+
+  private stepFromRawStatus(statusRaw?: string | null): StepKey {
+    const status = this.normalizeStatus(statusRaw);
+
+    switch (status) {
+      case 'RECIBIDA':
+        return 'RECIBIDA';
+      case 'PRESUPUESTO':
+        return 'PRESUPUESTO';
+      case 'APROBADA':
+        return 'APROBADA';
+      case 'EN_CURSO':
+        return 'EN_CURSO';
+      case 'FINALIZADA':
+      case 'CERRADA':
+        return 'FINALIZADA';
+      default:
+        return 'RECIBIDA';
+    }
+  }
+
+  private setActiveOrderSection(section: OrderSection): void {
+    this.activeOrderSection.set(section);
+    this.lastOrderSection.set(section);
+  }
+
+  private requestScroll(force = false): void {
+    this.scrollRequested = true;
+    this.scrollForce = force;
+  }
+
+  private isChatNearBottom(thresholdPx = 80): boolean {
+    try {
+      const el = this.chatContainer?.nativeElement;
+      if (!el) return true;
+      const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+      return dist < thresholdPx;
+    } catch {
+      return true;
+    }
+  }
+
+  private scrollToBottom(): void {
+    try {
+      const el = this.chatContainer?.nativeElement;
+      if (!el) return;
+      el.scrollTop = el.scrollHeight;
+    } catch {
+      // ignore
+    }
+  }
+
+  private triggerFadeIn(): void {
+    this.detailFade.set(false);
+    queueMicrotask(() => {
+      this.detailFade.set(true);
+      setTimeout(() => this.detailFade.set(false), 220);
+    });
+  }
+
+  private resolveInitialPortalView(): void {
+    if (this.pendingTicket()) {
+      this.portalView.set('success');
+      return;
+    }
+
+    this.portalView.set('home');
+  }
+
+  private getScrollTopFor(ref?: ElementRef<HTMLElement>): number | null {
+    const el = ref?.nativeElement;
+    if (!el) return null;
+
+    const top = el.getBoundingClientRect().top + window.scrollY - 84;
+    return Math.max(top, 0);
+  }
+
+  private afterOrderViewReady(task: () => void): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(task);
+    });
+  }
+
+  private scrollIntoView(ref: ElementRef<HTMLElement> | undefined, section: OrderSection): void {
+    this.setActiveOrderSection(section);
+
+    this.afterOrderViewReady(() => {
+      const top = this.getScrollTopFor(ref);
+      if (top === null) return;
+
+      window.scrollTo({
+        top,
+        behavior: 'smooth',
+      });
+    });
+  }
+
+  private normalizeStatus(value?: string | null): string {
+    return (value ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, '_');
+  }
+
+  private formatLabel(value?: string | null): string {
+    const normalized = (value ?? '').trim().replace(/_/g, ' ').toLowerCase();
+    if (!normalized) return '';
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  }
+
+  private toMillis(value?: string | null): number {
+    const n = value ? new Date(value).getTime() : 0;
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  private sameLocalDay(a?: string | null, b?: string | null): boolean {
+    if (!a || !b) return false;
+
+    const da = new Date(a);
+    const db = new Date(b);
+
+    return (
+      da.getFullYear() === db.getFullYear() &&
+      da.getMonth() === db.getMonth() &&
+      da.getDate() === db.getDate()
+    );
+  }
+
+  private getChatDayLabel(value?: string | null): string {
+    if (!value) return '';
+
+    const d = new Date(value);
+    const now = new Date();
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const diffDays = Math.round((today - target) / 86_400_000);
+
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Ayer';
+
+    return d.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
   }
 }

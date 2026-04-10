@@ -4,18 +4,23 @@ export interface ApiListaResponse<T> {
 }
 
 export interface ClienteOtItemDto {
-  id?: string; // opcional por compat
+  id?: string;
   codigo: string;
   estado: string;
   tipo: string;
   updatedAt: string;
+  tecnicoNombre?: string | null;
+}
+
+export interface HistorialUsuarioDto {
+  nombre: string;
 }
 
 export interface HistorialItemDto {
   fecha: string;
   evento: string;
   descripcion: string;
-  usuario: { nombre: string };
+  usuario: HistorialUsuarioDto;
 }
 
 export interface NotaDto {
@@ -69,16 +74,36 @@ export interface ClienteResumenDto {
   email?: string | null;
 }
 
+export interface UsuarioResumenDto {
+  id: string;
+  nombre: string;
+  usuario?: string | null;
+  email?: string | null;
+  rol?: string | null;
+  activo?: boolean | null;
+}
+
 export interface OtDetalleDto {
   id: string;
   codigo: string;
   estado: string;
   tipo: string;
   prioridad: string;
+
+  equipo?: string | null;
+  equipoId?: string | null;
+  categoriaEquipoId?: string | null;
+  categoriaEquipoNombre?: string | null;
+  fallaReportada?: string | null;
+
   descripcion: string;
 
+  fallaDetectada?: string | null;
+  diagnosticoTecnico?: string | null;
+  trabajoARealizar?: string | null;
+
   cliente: ClienteResumenDto;
-  tecnico: any | null;
+  tecnico: UsuarioResumenDto | null;
 
   fechaPrevista?: string | null;
   direccion?: string | null;
@@ -92,6 +117,8 @@ export interface OtDetalleDto {
   pago?: PagoDto | null;
   citas: CitaDto[];
   mensajes: MensajeDto[];
+
+  categoriasTrabajo?: string[]; // ✅ NUEVO CAMPO
 
   createdAt: string;
   updatedAt: string;
@@ -111,7 +138,6 @@ export interface TicketFotoDto {
   createdAt: string;
 }
 
-// ✅ Alineado con tu backend actual (TicketDetalleDto Java)
 export interface TicketDetalleDto {
   id: string;
   estado: string;
@@ -121,20 +147,19 @@ export interface TicketDetalleDto {
   createdAt: string;
   updatedAt: string;
 
-  // vínculo a OT (si ya existe)
   ordenTrabajoId?: string | null;
 
-  // snapshots cliente
   clienteNombre?: string | null;
   clienteTelefono?: string | null;
   clienteEmail?: string | null;
 
-  // campos estructurados
   equipo?: string | null;
   descripcionFalla?: string | null;
   tipoServicioSugerido?: string | null;
   direccion?: string | null;
+  observaciones?: string | null;
 
-  // fotos ticket
   fotos?: TicketFotoDto[];
+
+  categoriasTrabajo?: string[]; // ✅ NUEVO CAMPO
 }

@@ -1,6 +1,8 @@
 <mat-toolbar class="rs-topbar">
-  <div class="brand">
-    <span class="brand-mark"></span>
+  <div class="brand brand-lockup">
+    <span class="brand-logo-slot">
+      <img src="assets/solicitud.jpg" alt="PAMBYTE" class="brand-logo-img" />
+    </span>
     <span class="brand-logo">PAMBYTE</span>
   </div>
 
@@ -30,7 +32,7 @@
 <mat-menu #notificationsMenu="matMenu" xPosition="before" panelClass="rs-menu-panel">
   <div class="menu-shell">
     <div class="menu-header">
-      <div>
+      <div class="menu-header__copy">
         <div class="menu-title">Actividad</div>
         <div class="menu-subtitle">Portal de cliente</div>
       </div>
@@ -94,22 +96,17 @@
   class="global-loader">
 </mat-progress-bar>
 
-<main class="portal-shell">
+<main
+  class="portal-shell"
+  [class.portal-shell--success]="portalView() === 'success'"
+  [class.portal-shell--order]="portalView() === 'order'">
+
   <!-- HOME -->
   <section class="portal-view portal-view--home" *ngIf="portalView() === 'home'">
-    <section class="hero-premium-vanguard hero-premium-vanguard--final" aria-label="Bienvenida PAMBYTE">
+    <section class="hero-premium-vanguard" aria-label="Bienvenida PAMBYTE">
       <div class="hero-panel-glow" aria-hidden="true"></div>
       <div class="hero-grid" aria-hidden="true"></div>
       <div class="hero-grid hero-grid--accent" aria-hidden="true"></div>
-      <div class="hero-copy-shield" aria-hidden="true"></div>
-
-      <div class="hero-tech-lines" aria-hidden="true">
-        <span class="hero-tech-line hero-tech-line--1"></span>
-        <span class="hero-tech-line hero-tech-line--2"></span>
-
-        <span class="hero-tech-dot hero-tech-dot--1"></span>
-        <span class="hero-tech-dot hero-tech-dot--2"></span>
-      </div>
 
       <div class="hero-content">
         <span class="hero-status-tag">
@@ -118,45 +115,50 @@
         </span>
 
         <h1 class="hero-main-title">
-          <span class="hero-greeting hero-greeting--wave">
-            <span>Bienvenida</span>
+          <span class="hero-main-title__line">
+            {{ homeWelcomeTitle() }}
             <mat-icon class="hero-wave-icon">waving_hand</mat-icon>
           </span>
-          <span class="hero-accent">Tu tecnología,</span>
-          <span class="hero-accent">en nuestras manos.</span>
         </h1>
 
         <p class="hero-description">
-          Gestión técnica de precisión.
+          Seguimiento técnico elegante, claro y en tiempo real para tus equipos.
         </p>
 
-        <button mat-flat-button class="hero-cta-pill" (click)="openNewTicket()">
-          <span class="hero-cta-icon-wrap">
-            <mat-icon>add</mat-icon>
+        <button
+          mat-flat-button
+          type="button"
+          class="rs-btn rs-btn--primary hero-cta-btn"
+          (click)="openNewTicket()">
+          <span class="rs-btn__shimmer"></span>
+
+          <span class="rs-btn__label hero-cta-btn__label">
+            <span class="hero-cta-icon-wrap">
+              <mat-icon>add</mat-icon>
+            </span>
+            <span>Crear solicitud</span>
           </span>
-          <span class="hero-cta-text">Crear solicitud de soporte</span>
         </button>
       </div>
     </section>
 
     <section
-      class="order-return-card mirror-card"
+      class="order-return-strip mirror-card"
       *ngIf="ots().length > 0"
       aria-label="Continuar seguimiento">
-      <div class="order-return-card__copy">
-        <span class="order-return-card__eyebrow">Orden activa</span>
-        <h3>Retoma el seguimiento de tu equipo</h3>
-        <p>Vuelve exactamente a la orden activa y continúa desde su última etapa.</p>
+      <div class="order-return-strip__copy">
+        <span class="order-return-strip__eyebrow">Orden activa</span>
+        <p>Continúa exactamente donde lo dejaste.</p>
       </div>
 
-      <button mat-flat-button class="order-return-card__btn" (click)="resumeActiveOrder()">
+      <button mat-flat-button class="order-return-strip__btn" (click)="resumeActiveOrder()">
+        <span>Retomar</span>
         <mat-icon>north_east</mat-icon>
-        <span>Retomar orden</span>
       </button>
     </section>
 
     <div class="welcome-flow-list">
-      <article class="welcome-flow-card fade-in-entry" *ngFor="let item of welcomeHighlights; let i = index">
+      <article class="welcome-flow-card mirror-card" *ngFor="let item of welcomeHighlights; trackBy: trackById">
         <div class="welcome-flow-card__icon">
           <mat-icon>{{ item.icon }}</mat-icon>
         </div>
@@ -170,346 +172,417 @@
   </section>
 
   <!-- SUCCESS -->
-  <section class="portal-view portal-view--success-photo" *ngIf="portalView() === 'success'">
-    <div class="success-photo-shell">
-      <div class="success-photo-hero"></div>
+  <section class="success-canvas" *ngIf="portalView() === 'success'">
+    <div class="success-canvas__hero"></div>
 
-      <div class="success-photo-content">
-        <div class="success-check-wrap success-check-wrap--photo">
-          <div class="success-check-core success-check-core--photo">
-            <mat-icon>check</mat-icon>
-          </div>
-          <span class="success-check-orbit success-check-orbit--photo"></span>
+    <div class="success-canvas__content">
+      <div class="success-check-wrap">
+        <div class="success-check-core">
+          <mat-icon>check</mat-icon>
         </div>
-
-        <div class="success-copy success-copy--photo">
-          <h2><span>Solicitud recibida con éxito</span></h2>
-          <h3>Gracias por confiar en PAMBYTE</h3>
-          <p>
-            Tu solicitud fue registrada correctamente. Nuestro equipo técnico la revisará en breve.
-          </p>
-        </div>
-
-        <button
-          mat-flat-button
-          type="button"
-          class="rs-btn rs-btn--primary rs-btn--success-photo"
-          (click)="goHome()">
-          <span class="rs-btn__shimmer"></span>
-          <span class="rs-btn__label">Ir a inicio</span>
-        </button>
       </div>
+
+      <div class="success-copy">
+        <h2>Solicitud recibida con éxito</h2>
+        <p>
+          Tu solicitud fue registrada correctamente. El equipo técnico la validará en breve.
+        </p>
+      </div>
+
+      <button
+        mat-flat-button
+        type="button"
+        class="rs-btn rs-btn--primary success-primary-btn"
+        (click)="goHome()">
+        <span class="rs-btn__shimmer"></span>
+        <span class="rs-btn__label">Ir a inicio</span>
+      </button>
     </div>
   </section>
 
   <!-- ORDER -->
   <ng-container *ngIf="portalView() === 'order'">
     <section
-      class="portal-view portal-view--order"
-      *ngIf="selectedOtDetalle() as ot"
+      class="order-canvas"
+      *ngIf="selectedOtDetalle() as ot; else orderEmptyState"
       [class.is-fading]="detailFade()">
 
-      <section class="order-screen-head" #orderTopRef>
-        <div class="order-screen-head__copy">
-          <h2>Estado de tu Orden</h2>
-          <p>Seguimiento técnico de tu servicio.</p>
-        </div>
+      <div class="order-canvas__inner">
+        <section class="order-screen-head" #orderTopRef>
+          <div class="order-screen-head__copy">
+            <h2>Estado de tu orden</h2>
+            <p>Seguimiento técnico de tu servicio.</p>
+          </div>
 
-        <button
-          mat-icon-button
-          class="order-screen-head__plus"
-          (click)="openNewTicket()"
-          aria-label="Nueva solicitud">
-          <mat-icon>add</mat-icon>
-        </button>
-      </section>
-
-      <section class="order-equipment-block" aria-label="Equipos en soporte">
-        <div class="order-equipment-block__head">
-          <span class="order-equipment-block__title">Equipos en soporte</span>
-          <span class="order-equipment-block__count">{{ ots().length }}</span>
-        </div>
-
-        <div class="service-chips-row">
           <button
+            mat-icon-button
+            class="order-screen-head__plus"
+            (click)="openNewTicket()"
+            aria-label="Nueva solicitud">
+            <mat-icon>add</mat-icon>
+          </button>
+        </section>
+
+        <section class="order-equipment-block" aria-label="Equipos en soporte">
+          <div class="order-equipment-block__head">
+            <span class="order-equipment-block__title">Equipos en soporte</span>
+          </div>
+
+          <div class="service-chips-row">
+            <button
+              type="button"
+              class="service-chip"
+              *ngFor="let item of ots(); trackBy: trackById"
+              [class.is-active]="selectedOtCodigoSignal() === item.codigo"
+              (click)="selectOtChip(item.codigo)">
+              <mat-icon>
+                {{ getOtChipIcon(item, selectedOtDetalle()?.codigo === item.codigo ? selectedOtDetalle() : null) }}
+              </mat-icon>
+              <span>{{ getOtChipLabel(item) }}</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="timeline-panel">
+          <div class="timeline-card">
+            <div class="timeline-card__glow" aria-hidden="true"></div>
+
+            <div class="timeline-card__topline">
+              <span class="timeline-card__eyebrow">Progreso operativo</span>
+              <span class="timeline-card__status">{{ serviceStatusLabel(ot) }}</span>
+            </div>
+
+            <div class="timeline-track">
+              <ng-container *ngFor="let step of steps; let i = index; let last = last">
+                <div class="timeline-step">
+                  <span
+                    class="timeline-step__dot"
+                    [class.is-done]="i < stepIndex()"
+                    [class.is-active]="i === stepIndex()">
+                    <mat-icon>{{ i < stepIndex() ? 'check' : step.icon }}</mat-icon>
+                  </span>
+
+                  <span class="timeline-step__label">{{ step.label }}</span>
+                </div>
+
+                <span
+                  *ngIf="!last"
+                  class="timeline-line"
+                  [class.is-done]="i < stepIndex()">
+                </span>
+              </ng-container>
+            </div>
+          </div>
+        </section>
+
+        <section class="service-summary-block">
+          <h3>{{ activeServiceTitle() }}</h3>
+
+          <div class="service-badges" *ngIf="activeServiceBadges().length > 0">
+            <span class="service-badge" *ngFor="let badge of activeServiceBadges(); trackBy: trackById">
+              {{ badge }}
+            </span>
+          </div>
+        </section>
+
+        <div class="order-sections">
+          <!-- PRESUPUESTO -->
+          <section class="section-card mirror-card" #budgetSectionRef>
+            <div class="section-head">
+              <div class="section-head__copy">
+                <span class="section-label">Presupuesto</span>
+                <p class="section-hint">Diagnóstico, aprobación y detalle técnico</p>
+              </div>
+
+              <span class="section-state-chip" *ngIf="ot.presupuesto?.estado">
+                {{ presupuestoEstadoLabel(ot.presupuesto?.estado) }}
+              </span>
+            </div>
+
+            <ng-container *ngIf="ot.presupuesto; else emptyBudget">
+              <div class="budget-shell">
+                <div class="budget-amount">
+                  <span class="budget-amount__currency">$</span>
+                  <span class="budget-amount__value">{{ ot.presupuesto.importe | number:'1.2-2' }}</span>
+                </div>
+
+                <p class="budget-detail">{{ ot.presupuesto.detalle }}</p>
+
+                <div class="budget-meta">
+                  <span class="soft-chip budget-meta__chip" *ngIf="ot.presupuesto.sentAt">
+                    <mat-icon>schedule</mat-icon>
+                    <span>{{ ot.presupuesto.sentAt | date:'dd/MM/yyyy · HH:mm' }}</span>
+                  </span>
+
+                  <span class="soft-chip budget-meta__chip" *ngIf="ot.presupuesto.respondedAt">
+                    <mat-icon>task_alt</mat-icon>
+                    <span>{{ ot.presupuesto.respondedAt | date:'dd/MM/yyyy · HH:mm' }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <div class="budget-actions" *ngIf="ot.presupuesto.estado === 'ENVIADO'">
+                <mat-checkbox
+                  [checked]="aceptoCheck()"
+                  (change)="aceptoCheck.set(!aceptoCheck())"
+                  class="budget-check">
+                  Confirmo que acepto este presupuesto.
+                </mat-checkbox>
+
+                <div class="budget-actions__buttons">
+                  <button
+                    mat-flat-button
+                    class="action-btn action-btn--primary"
+                    (click)="aceptar(getCurrentOtActionId(ot))"
+                    [disabled]="!aceptoCheck() || actionBusy()">
+                    Aprobar
+                  </button>
+
+                  <button
+                    mat-stroked-button
+                    class="action-btn action-btn--ghost"
+                    (click)="rechazar(getCurrentOtActionId(ot))"
+                    [disabled]="actionBusy()">
+                    Rechazar
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #emptyBudget>
+              <div class="empty-module">
+                <div class="empty-module__icon">
+                  <mat-icon>psychology</mat-icon>
+                </div>
+
+                <div class="empty-module__copy">
+                  <h3>Diagnóstico en curso</h3>
+                  <p>Tu técnico está evaluando el equipo antes de emitir el presupuesto.</p>
+                </div>
+              </div>
+            </ng-template>
+          </section>
+
+          <!-- CITA -->
+          <section class="section-card mirror-card" #citaSectionRef>
+            <div class="section-head">
+              <div class="section-head__copy">
+                <span class="section-label">Cita</span>
+                <p class="section-hint">Fecha y hora definidas por el taller</p>
+              </div>
+
+              <span class="section-state-chip" *ngIf="nextCita() as cita">
+                {{ citaEstadoLabel(cita.estado) }}
+              </span>
+            </div>
+
+            <ng-container *ngIf="nextCita() as cita; else emptyCita">
+              <div class="appointment-grid">
+                <div class="appointment-day">
+                  {{ cita.inicio | date:'dd' }}
+                  <span>{{ cita.inicio | date:'MMM' }}</span>
+                </div>
+
+                <div class="appointment-copy">
+                  <h3>{{ cita.inicio | date:'EEEE, dd MMMM' }}</h3>
+                  <p>{{ cita.inicio | date:'HH:mm' }} - {{ cita.fin | date:'HH:mm' }}</p>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #emptyCita>
+              <div class="empty-module">
+                <div class="empty-module__icon">
+                  <mat-icon>event_busy</mat-icon>
+                </div>
+
+                <div class="empty-module__copy">
+                  <h3>Aún no hay cita programada</h3>
+                  <p>Te avisaremos cuando el taller confirme la fecha de atención.</p>
+                </div>
+              </div>
+            </ng-template>
+          </section>
+
+          <!-- PAGO -->
+          <section class="section-card mirror-card" #paymentSectionRef>
+            <div class="section-head">
+              <div class="section-head__copy">
+                <span class="section-label">Pago</span>
+                <p class="section-hint">Confirmación y comprobante</p>
+              </div>
+
+              <span class="section-state-chip" *ngIf="ot.pago?.estado">
+                {{ pagoEstadoLabel(ot.pago?.estado) }}
+              </span>
+            </div>
+
+            <div class="payment-card">
+              <div class="payment-primary">
+                <span class="payment-primary__label">{{ paymentReferenceLabel }}</span>
+
+                <div class="payment-primary__row">
+                  <strong class="payment-primary__value">{{ paymentReferenceValue }}</strong>
+
+                  <button
+                    mat-icon-button
+                    class="copy-btn"
+                    type="button"
+                    (click)="copyToClipboard(paymentReferenceValue)"
+                    aria-label="Copiar datos de pago">
+                    <span class="copy-btn__inner">
+                      <mat-icon>content_copy</mat-icon>
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="payment-actions">
+                <button
+                  mat-stroked-button
+                  class="payment-confirm-btn"
+                  (click)="marcarTransferencia(getCurrentOtActionId(ot))"
+                  [disabled]="actionBusy() || ot.pago?.estado === 'MARCADO_TRANSFERENCIA' || ot.pago?.estado === 'COMPROBANTE_SUBIDO' || ot.pago?.estado === 'CONFIRMADO'">
+                  Confirmar pago
+                </button>
+
+                <label class="upload-btn" aria-label="Subir comprobante">
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*,.pdf"
+                    (change)="onPagoFileSelected($event)" />
+                  <mat-icon>attach_file</mat-icon>
+                  <span>{{ pagoFile()?.name || 'Subir comprobante' }}</span>
+                </label>
+
+                <button
+                  mat-flat-button
+                  class="send-proof-btn"
+                  (click)="uploadComprobante(getCurrentOtActionId(ot))"
+                  [disabled]="!pagoFile() || actionBusy()">
+                  Enviar
+                </button>
+              </div>
+
+              <a
+                *ngIf="ot.pago?.comprobanteUrl"
+                class="proof-link"
+                [href]="ot.pago?.comprobanteUrl || '#'"
+                target="_blank"
+                rel="noopener noreferrer">
+                <mat-icon>open_in_new</mat-icon>
+                <span>Ver comprobante enviado</span>
+              </a>
+            </div>
+          </section>
+
+          <!-- CHAT -->
+          <section class="section-card mirror-card" #chatSectionRef>
+            <div class="chat-module">
+              <div class="chat-module__head">
+                <div class="chat-module__titles">
+                  <span class="section-label">Chat técnico</span>
+                  <p>Canal de servicio</p>
+                </div>
+
+                <span class="chat-head-chip" *ngIf="quickUnreadCount() > 0">
+                  {{ quickUnreadCount() }}
+                </span>
+              </div>
+
+              <div class="chat-scroll" #chatScroll>
+                <ng-container *ngIf="chatItems().length; else emptyChat">
+                  <div class="chat-thread">
+                    <ng-container *ngFor="let item of chatItems(); trackBy: trackById">
+                      <div class="chat-divider" *ngIf="item.showDayDivider">
+                        <span>{{ item.dayLabel }}</span>
+                      </div>
+
+                      <div class="chat-row" [class.is-mine]="item.isMine" [class.is-tech]="!item.isMine">
+                        <div class="chat-meta" *ngIf="item.showMeta && !item.isMine">
+                          {{ getSenderName(item.message) }}
+                        </div>
+
+                        <div class="chat-bubble">
+                          <div class="chat-text">{{ item.message.contenido }}</div>
+                          <div class="chat-time">{{ item.message.createdAt | date:'HH:mm' }}</div>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                </ng-container>
+
+                <ng-template #emptyChat>
+                  <div class="empty-module empty-module--chat">
+                    <div class="empty-module__icon">
+                      <mat-icon>forum</mat-icon>
+                    </div>
+
+                    <div class="empty-module__copy">
+                      <h3>Sin mensajes todavía</h3>
+                      <p>Cuando el taller envíe una actualización, la verás aquí.</p>
+                    </div>
+                  </div>
+                </ng-template>
+              </div>
+
+              <form class="chat-composer" [formGroup]="msgForm" (ngSubmit)="sendMessage()">
+                <div class="chat-composer__field">
+                  <input
+                    #chatInput
+                    type="text"
+                    class="chat-input"
+                    formControlName="contenido"
+                    placeholder="Escribe un mensaje al taller" />
+                </div>
+
+                <button
+                  mat-flat-button
+                  type="submit"
+                  class="chat-send-btn"
+                  [disabled]="!sendReady() || actionBusy()">
+                  <span class="chat-send-btn__inner">
+                    <mat-icon>send</mat-icon>
+                  </span>
+                </button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <ng-template #orderEmptyState>
+      <section class="portal-view portal-view--order-empty">
+        <div class="order-empty-card mirror-card">
+          <div class="order-empty-card__icon">
+            <mat-icon>devices</mat-icon>
+          </div>
+
+          <div class="order-empty-card__copy">
+            <h3>Aún no tienes una orden activa</h3>
+            <p>
+              Crea una solicitud de soporte y cuando el taller la convierta en orden,
+              podrás seguir todo el servicio desde aquí.
+            </p>
+          </div>
+
+          <button
+            mat-flat-button
             type="button"
-            class="service-chip"
-            *ngFor="let item of ots(); trackBy: trackById"
-            [class.is-active]="selectedOtCodigoSignal() === item.codigo"
-            (click)="selectOtChip(item.codigo)">
-            <mat-icon>{{ getOtChipIcon(item, selectedOtDetalle()?.codigo === item.codigo ? selectedOtDetalle() : null) }}</mat-icon>
-            <span>{{ getOtDisplayName(item, selectedOtDetalle()?.codigo === item.codigo ? selectedOtDetalle() : null) }}</span>
+            class="rs-btn rs-btn--primary"
+            (click)="openNewTicket()">
+            <span class="rs-btn__shimmer"></span>
+            <span class="rs-btn__label">Crear solicitud</span>
           </button>
         </div>
       </section>
-
-      <section class="order-overview-card order-overview-card--editorial mirror-card surface-card">
-        <div class="timeline-card timeline-card--luxury">
-          <div class="timeline-card__glow" aria-hidden="true"></div>
-
-          <div class="timeline-card__topline">
-            <span class="timeline-card__eyebrow">Progreso operativo</span>
-            <span class="timeline-card__status">{{ serviceStatusLabel(ot) }}</span>
-          </div>
-
-          <div class="timeline-track">
-            <ng-container *ngFor="let step of steps; let i = index; let last = last">
-              <div class="timeline-step">
-                <span
-                  class="timeline-step__dot"
-                  [class.is-done]="i < stepIndex()"
-                  [class.is-active]="i === stepIndex()">
-                  <mat-icon>{{ i < stepIndex() ? 'check' : step.icon }}</mat-icon>
-                </span>
-                <span class="timeline-step__label">{{ step.label }}</span>
-              </div>
-
-              <span
-                *ngIf="!last"
-                class="timeline-line"
-                [class.is-done]="i < stepIndex()">
-              </span>
-            </ng-container>
-          </div>
-        </div>
-
-        <div class="order-summary order-summary--premium">
-          <div class="order-summary__copy">
-            <span class="order-summary__eyebrow">Equipo activo</span>
-            <h3>{{ activeServiceTitle() }}</h3>
-            <p *ngIf="serviceMetaLine(ot)">{{ serviceMetaLine(ot) }}</p>
-          </div>
-
-          <div class="order-summary__meta">
-            <span class="order-summary__badge order-summary__badge--soft">{{ ot.codigo }}</span>
-            <span class="order-summary__badge order-summary__badge--live">
-              <span class="order-summary__pulse"></span>
-              Seguimiento activo
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <div class="order-sections">
-        <section class="section-card section-card--budget mirror-card" #budgetSectionRef>
-          <div class="section-head">
-            <div class="section-head__copy">
-              <span class="section-label">Presupuesto</span>
-              <p class="section-hint">Diagnóstico, aprobación y detalle técnico</p>
-            </div>
-          </div>
-
-          <ng-container *ngIf="ot.presupuesto; else emptyBudget">
-            <div class="budget-shell">
-              <div class="budget-amount">
-                <span class="budget-amount__currency">$</span>
-                <span class="budget-amount__value">{{ ot.presupuesto.importe | number:'1.2-2' }}</span>
-              </div>
-
-              <p class="budget-detail">{{ ot.presupuesto.detalle }}</p>
-            </div>
-
-            <div
-              class="budget-actions"
-              *ngIf="ot.presupuesto.estado === 'ENVIADO' || ot.presupuesto.estado === 'PENDIENTE'">
-              <mat-checkbox
-                [checked]="aceptoCheck()"
-                (change)="aceptoCheck.set(!aceptoCheck())"
-                class="budget-check">
-                Acepto el presupuesto
-              </mat-checkbox>
-
-              <div class="budget-actions__buttons">
-                <button
-                  mat-flat-button
-                  class="action-btn action-btn--primary"
-                  (click)="aceptar(getCurrentOtActionId(ot))"
-                  [disabled]="!aceptoCheck() || actionBusy()">
-                  Aprobar
-                </button>
-
-                <button
-                  mat-stroked-button
-                  class="action-btn action-btn--ghost"
-                  (click)="rechazar(getCurrentOtActionId(ot))"
-                  [disabled]="actionBusy()">
-                  Rechazar
-                </button>
-              </div>
-            </div>
-          </ng-container>
-
-          <ng-template #emptyBudget>
-            <div class="empty-module empty-module--premium">
-              <div class="empty-module__icon">
-                <mat-icon>psychology</mat-icon>
-              </div>
-              <h3>Diagnóstico en curso...</h3>
-              <p>Tu técnico está evaluando el equipo antes de emitir el presupuesto.</p>
-            </div>
-          </ng-template>
-        </section>
-
-        <section class="section-card section-card--appointment mirror-card" #citaSectionRef>
-          <div class="section-head">
-            <div class="section-head__copy">
-              <span class="section-label">Cita</span>
-              <p class="section-hint">Fecha y hora de atención programada</p>
-            </div>
-          </div>
-
-          <ng-container *ngIf="nextCita() as cita; else emptyCita">
-            <div class="appointment-grid appointment-grid--premium">
-              <div class="appointment-day">
-                {{ cita.inicio | date:'dd' }}
-                <span>{{ cita.inicio | date:'MMM' }}</span>
-              </div>
-
-              <div class="appointment-copy">
-                <h3>{{ cita.inicio | date:'EEEE, dd MMMM' }}</h3>
-                <p>{{ cita.inicio | date:'HH:mm' }} - {{ cita.fin | date:'HH:mm' }}</p>
-              </div>
-            </div>
-          </ng-container>
-
-          <ng-template #emptyCita>
-            <div class="empty-module empty-module--premium">
-              <div class="empty-module__icon">
-                <mat-icon>event_busy</mat-icon>
-              </div>
-              <h3>Aún no hay cita programada</h3>
-              <p>Te avisaremos en cuanto el taller confirme fecha y hora.</p>
-            </div>
-          </ng-template>
-        </section>
-
-        <section class="section-card section-card--payment mirror-card" #paymentSectionRef>
-          <div class="section-head">
-            <div class="section-head__copy">
-              <span class="section-label">Pago móvil</span>
-              <p class="section-hint">Datos de pago y confirmación de transferencia</p>
-            </div>
-          </div>
-
-          <div class="payment-inline">
-            <div class="payment-inline__group">
-              <strong class="payment-data">04249264883 · 24964090 · 0102</strong>
-
-              <button
-                mat-icon-button
-                class="copy-btn"
-                (click)="copyToClipboard('04249264883 24964090 0102')"
-                aria-label="Copiar datos de pago">
-                <mat-icon>content_copy</mat-icon>
-              </button>
-            </div>
-
-            <button
-              mat-button
-              class="payment-confirm-btn"
-              (click)="marcarTransferencia(getCurrentOtActionId(ot))"
-              [disabled]="actionBusy()">
-              Confirmar pago
-            </button>
-          </div>
-
-          <div class="payment-upload-row">
-            <label class="upload-btn" aria-label="Subir recibo">
-              <input
-                type="file"
-                hidden
-                accept="image/*,.pdf"
-                (change)="onPagoFileSelected($event)" />
-              <mat-icon>attach_file</mat-icon>
-              <span>{{ pagoFile() ? pagoFile()!.name : 'Subir Recibo' }}</span>
-            </label>
-
-            <button
-              mat-flat-button
-              class="send-proof-btn"
-              (click)="uploadComprobante(getCurrentOtActionId(ot))"
-              [disabled]="!pagoFile() || actionBusy()">
-              Enviar
-            </button>
-          </div>
-        </section>
-
-        <section class="section-card section-card--chat mirror-card" #chatSectionRef>
-          <div class="chat-module">
-            <div class="chat-module__head">
-              <div class="chat-module__titles">
-                <span class="section-label">Chat técnico</span>
-                <p>Canal de servicio</p>
-              </div>
-              <span class="chat-dot"></span>
-            </div>
-
-            <div class="chat-scroll" #chatScroll>
-              <ng-container *ngIf="chatItems().length; else emptyChat">
-                <div class="chat-thread">
-                  <ng-container *ngFor="let item of chatItems(); trackBy: trackById">
-                    <div class="chat-divider" *ngIf="item.showDayDivider">
-                      <span>{{ item.dayLabel }}</span>
-                    </div>
-
-                    <div class="chat-row" [class.is-mine]="item.isMine" [class.is-tech]="!item.isMine">
-                      <div class="chat-meta" *ngIf="item.showMeta && !item.isMine">
-                        {{ getSenderName(item.message) }}
-                      </div>
-
-                      <div class="chat-bubble">
-                        <div class="chat-text">{{ item.message.contenido }}</div>
-                        <div class="chat-time">{{ item.message.createdAt | date:'HH:mm' }}</div>
-                      </div>
-                    </div>
-                  </ng-container>
-                </div>
-              </ng-container>
-
-              <ng-template #emptyChat>
-                <div class="empty-module empty-module--premium empty-module--chat">
-                  <div class="empty-module__icon">
-                    <mat-icon>forum</mat-icon>
-                  </div>
-                  <h3>Sin registros aún</h3>
-                  <p>Cuando exista conversación con tu técnico, aparecerá aquí.</p>
-                </div>
-              </ng-template>
-            </div>
-
-            <div class="chat-composer">
-              <div class="chat-input-shell chat-input-shell--minimal">
-                <button type="button" class="chat-input-shell__attach-box" aria-label="Adjuntar archivo">
-                  <mat-icon class="chat-input-shell__attach" aria-hidden="true">attach_file</mat-icon>
-                </button>
-
-                <input
-                  #chatInput
-                  type="text"
-                  [formControl]="msgForm.controls.contenido"
-                  placeholder="Escribe a tu técnico..."
-                  autocomplete="off"
-                  (keydown.enter)="sendMsgOt(getCurrentOtActionId(ot))" />
-
-                <button
-                  mat-flat-button
-                  type="button"
-                  class="chat-send-btn chat-send-btn--icon"
-                  (click)="sendMsgOt(getCurrentOtActionId(ot))"
-                  [disabled]="!sendReady() || actionBusy()"
-                  aria-label="Enviar mensaje">
-                  <mat-icon>send</mat-icon>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </section>
+    </ng-template>
   </ng-container>
 </main>
 
-<nav class="bottom-nav" aria-label="Navegación principal" *ngIf="portalView() === 'order'">
+<nav class="bottom-nav" *ngIf="portalView() === 'order'">
   <button
     type="button"
     class="bottom-nav__item"

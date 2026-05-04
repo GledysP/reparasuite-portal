@@ -23,8 +23,9 @@ RUN set -eux; \
       cp -a "$SRC"/. /app/out/; \
     fi
 
-# ===== RUN (Nginx) =====
+# ===== RUN (Nginx) ====
 FROM nginx:alpine
+# Quita la página por defecto de nginx
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/out/. /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf

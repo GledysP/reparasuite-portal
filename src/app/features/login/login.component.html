@@ -136,44 +136,6 @@
               }
             </button>
 
-            <div class="divider">
-              <span>o continúa con</span>
-            </div>
-
-            <div class="social-auth-row" role="group" aria-label="Login social">
-              <button
-                type="button"
-                class="social-btn"
-                aria-label="Continuar con Google"
-                (click)="loginWithGoogle()"
-              >
-                <img
-                  src="https://www.google.com/favicon.ico"
-                  alt=""
-                  width="18"
-                  height="18"
-                />
-              </button>
-
-              <button
-                type="button"
-                class="social-btn"
-                aria-label="Continuar con Facebook"
-                (click)="loginWithFacebook()"
-              >
-                <mat-icon>facebook</mat-icon>
-              </button>
-
-              <button
-                type="button"
-                class="social-btn"
-                aria-label="Continuar con Apple"
-                (click)="loginWithApple()"
-              >
-                <mat-icon>apple</mat-icon>
-              </button>
-            </div>
-
             <div class="register-block">
               <span>¿No tienes cuenta?</span>
               <a class="register-link" [routerLink]="['/auth/register']">

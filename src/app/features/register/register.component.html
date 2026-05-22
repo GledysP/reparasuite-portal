@@ -1,11 +1,19 @@
 <div class="auth-container">
-  <section class="auth-hero" aria-hidden="true">
-    <div class="hero-glow hero-glow-1"></div>
-    <div class="hero-glow hero-glow-2"></div>
-    <div class="hero-grid"></div>
+  <section class="auth-hero" aria-hidden="true" [style.backgroundImage]="'url(assets/fondologin.png)'">
+    <div class="hero-overlay"></div>
 
-    <div class="hero-content">
-      <div class="top-badge">Portal Oficial</div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-grid hero-grid-strong"></div>
+    <div class="hero-light-sweep"></div>
+
+    <div class="hero-content animate-fade-in-up">
+      <div class="top-badge">
+        <mat-icon inline="true" class="badge-icon">verified</mat-icon>
+        Portal Oficial
+      </div>
 
       <h1 class="hero-title">
         Crea tu <br /><span>Cuenta Cliente</span>
@@ -15,142 +23,167 @@
         Regístrate para acceder a tus tickets, órdenes, presupuestos, pagos y seguimiento.
       </p>
 
-      <div class="hero-buttons">
-        <button mat-button class="btn-outline" type="button" routerLink="/login">Iniciar sesión</button>
+      <div class="hero-buttons desktop-only">
+        <button mat-button class="btn-outline" type="button" routerLink="/login">
+          Iniciar sesión
+        </button>
       </div>
     </div>
   </section>
 
   <section class="auth-form-side">
-    <mat-card class="login-card">
-      <div class="login-header">
-        <div class="main-logo-container" aria-hidden="true">
-          <mat-icon>person_add</mat-icon>
+    <div class="auth-form-shell">
+      <mat-card class="login-card stitch-card animate-slide-up">
+        
+        <div class="stitch-card-header desktop-only-flex">
+          <div class="main-logo-container" aria-hidden="true">
+            <mat-icon>person_add</mat-icon>
+          </div>
+          <h2>Crear cuenta</h2>
+          <p>Completa tus datos para entrar al portal cliente.</p>
         </div>
 
-        <h2>Crear cuenta</h2>
-        <p>Completa tus datos para entrar al portal cliente.</p>
-      </div>
-
-      <mat-card-content class="card-content">
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
-          @if (error) {
-            <div class="error-banner" role="alert" aria-live="polite">
-              <mat-icon>error_outline</mat-icon>
-              <span>{{ error }}</span>
-            </div>
-          }
-
-          @if (success) {
-            <div class="success-banner" role="status" aria-live="polite">
-              <mat-icon>check_circle</mat-icon>
-              <span>{{ success }}</span>
-            </div>
-          }
-
-          <mat-form-field appearance="outline" class="custom-pill-input">
-            <mat-label>Nombre</mat-label>
-            <input
-              matInput
-              formControlName="nombre"
-              type="text"
-              autocomplete="name"
-              placeholder="Tu nombre completo"
-              [disabled]="loading"
-            />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="custom-pill-input">
-            <mat-label>Email</mat-label>
-            <input
-              matInput
-              formControlName="email"
-              type="email"
-              inputmode="email"
-              autocomplete="email"
-              placeholder="ejemplo@mail.com"
-              [disabled]="loading"
-            />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Teléfono</mat-label>
-            <input matInput formControlName="telefono" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="custom-pill-input">
-            <mat-label>Contraseña</mat-label>
-            <input
-              matInput
-              [type]="hidePassword ? 'password' : 'text'"
-              formControlName="password"
-              autocomplete="new-password"
-              [disabled]="loading"
-            />
-
-            <button
-              type="button"
-              mat-icon-button
-              matSuffix
-              class="pw-toggle"
-              (click)="togglePassword()"
-              [attr.aria-label]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
-              [disabled]="loading"
-            >
-              <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
-            </button>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="custom-pill-input">
-            <mat-label>Confirmar contraseña</mat-label>
-            <input
-              matInput
-              [type]="hideConfirmPassword ? 'password' : 'text'"
-              formControlName="confirmPassword"
-              autocomplete="new-password"
-              [disabled]="loading"
-            />
-
-            <button
-              type="button"
-              mat-icon-button
-              matSuffix
-              class="pw-toggle"
-              (click)="toggleConfirmPassword()"
-              [attr.aria-label]="hideConfirmPassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
-              [disabled]="loading"
-            >
-              <mat-icon>{{ hideConfirmPassword ? 'visibility' : 'visibility_off' }}</mat-icon>
-            </button>
-          </mat-form-field>
-
-          @if (form.hasError('passwordMismatch') && form.get('confirmPassword')?.touched) {
-            <div class="error-inline">Las contraseñas no coinciden.</div>
-          }
-
-          <button
-            mat-flat-button
-            class="btn-figma-pro"
-            type="submit"
-            [disabled]="form.invalid || loading"
-          >
-            <span>{{ loading ? 'Creando...' : 'Crear cuenta' }}</span>
-
-            @if (loading) {
-              <mat-progress-spinner
-                class="cta-spinner"
-                diameter="18"
-                mode="indeterminate"
-              ></mat-progress-spinner>
+        <mat-card-content class="card-content">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+            
+            @if (error) {
+              <div class="error-banner animate-fade-in" role="alert" aria-live="polite">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ error }}</span>
+              </div>
             }
-          </button>
 
-          <div class="register-block">
-            <span>¿Ya tienes cuenta?</span>
-            <a class="register-link" [routerLink]="['/login']">Inicia sesión</a>
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
+            @if (success) {
+              <div class="success-banner animate-fade-in" role="status" aria-live="polite">
+                <mat-icon>check_circle</mat-icon>
+                <span>{{ success }}</span>
+              </div>
+            }
+
+            <div class="stitch-form-group">
+              <label for="nombreInput">Nombre*</label>
+              <div class="stitch-input-wrapper" [class.has-error]="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+                <mat-icon class="prefix-icon">person_outline</mat-icon>
+                <input
+                  id="nombreInput"
+                  formControlName="nombre"
+                  type="text"
+                  autocomplete="name"
+                  placeholder="Tu nombre completo"
+                  [disabled]="loading"
+                />
+              </div>
+            </div>
+
+            <div class="stitch-form-group">
+              <label for="emailInput">Email*</label>
+              <div class="stitch-input-wrapper" [class.has-error]="form.get('email')?.invalid && form.get('email')?.touched">
+                <mat-icon class="prefix-icon">mail_outline</mat-icon>
+                <input
+                  id="emailInput"
+                  formControlName="email"
+                  type="email"
+                  inputmode="email"
+                  autocomplete="email"
+                  placeholder="ejemplo@mail.com"
+                  [disabled]="loading"
+                />
+              </div>
+            </div>
+
+            <div class="stitch-form-group">
+              <label for="telefonoInput">Teléfono*</label>
+              <div class="stitch-input-wrapper" [class.has-error]="form.get('telefono')?.invalid && form.get('telefono')?.touched">
+                <mat-icon class="prefix-icon">smartphone</mat-icon>
+                <input
+                  id="telefonoInput"
+                  formControlName="telefono"
+                  type="tel"
+                  placeholder="Ej: +58 412 1234567"
+                  [disabled]="loading"
+                />
+              </div>
+            </div>
+
+            <div class="stitch-form-group">
+              <label for="passwordInput">Contraseña*</label>
+              <div class="stitch-input-wrapper" [class.has-error]="form.get('password')?.invalid && form.get('password')?.touched">
+                <mat-icon class="prefix-icon">lock_outline</mat-icon>
+                <input
+                  id="passwordInput"
+                  [type]="hidePassword ? 'password' : 'text'"
+                  formControlName="password"
+                  autocomplete="new-password"
+                  placeholder="••••••••"
+                  [disabled]="loading"
+                />
+                <button
+                  type="button"
+                  class="suffix-btn"
+                  (click)="togglePassword()"
+                  [attr.aria-label]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+                  [disabled]="loading"
+                >
+                  <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="stitch-form-group" style="margin-bottom: 8px;">
+              <label for="confirmPasswordInput">Confirmar contraseña*</label>
+              <div class="stitch-input-wrapper" [class.has-error]="(form.get('confirmPassword')?.invalid || form.hasError('passwordMismatch')) && form.get('confirmPassword')?.touched">
+                <mat-icon class="prefix-icon">lock_outline</mat-icon>
+                <input
+                  id="confirmPasswordInput"
+                  [type]="hideConfirmPassword ? 'password' : 'text'"
+                  formControlName="confirmPassword"
+                  autocomplete="new-password"
+                  placeholder="••••••••"
+                  [disabled]="loading"
+                />
+                <button
+                  type="button"
+                  class="suffix-btn"
+                  (click)="toggleConfirmPassword()"
+                  [attr.aria-label]="hideConfirmPassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+                  [disabled]="loading"
+                >
+                  <mat-icon>{{ hideConfirmPassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            @if (form.hasError('passwordMismatch') && form.get('confirmPassword')?.touched) {
+              <div class="error-inline animate-fade-in">Las contraseñas no coinciden.</div>
+            }
+
+            <button
+              mat-flat-button
+              class="stitch-btn-primary mt-3"
+              type="submit"
+              [disabled]="loading"
+            >
+              <span>{{ loading ? 'Creando...' : 'Crear cuenta' }}</span>
+              @if (!loading) {
+                <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+              }
+              @if (loading) {
+                <mat-progress-spinner class="cta-spinner" diameter="20" mode="indeterminate"></mat-progress-spinner>
+              }
+            </button>
+
+            <div class="register-block">
+              <span>¿Ya tienes cuenta?</span>
+              <a class="register-link" [routerLink]="['/login']">Inicia sesión</a>
+            </div>
+          </form>
+        </mat-card-content>
+
+        <div class="card-footer-watermark">
+          <mat-icon>support_agent</mat-icon>
+          <span>ASISTENCIA 24/7</span>
+        </div>
+      </mat-card>
+    </div>
   </section>
 </div>

@@ -1,5 +1,7 @@
 <div class="auth-container">
-  <section class="auth-hero" aria-hidden="true">
+  <section class="auth-hero" aria-hidden="true" [style.backgroundImage]="'url(assets/fondologin.png)'">
+    <div class="hero-overlay"></div>
+
     <div class="hero-orb hero-orb-1"></div>
     <div class="hero-orb hero-orb-2"></div>
     <div class="hero-orb hero-orb-3"></div>
@@ -7,8 +9,11 @@
     <div class="hero-grid hero-grid-strong"></div>
     <div class="hero-light-sweep"></div>
 
-    <div class="hero-content">
-      <div class="top-badge">Portal Oficial</div>
+    <div class="hero-content animate-fade-in-up">
+      <div class="top-badge">
+        <mat-icon inline="true" class="badge-icon">verified</mat-icon>
+        Portal Oficial
+      </div>
 
       <h1 class="hero-title">
         Descubre tu <br /><span>Portal Cliente</span>
@@ -19,21 +24,16 @@
         experiencia clara, moderna y segura.
       </p>
 
-      <div class="hero-pills">
+      <div class="hero-pills desktop-only">
         <span class="hero-pill">Seguimiento</span>
         <span class="hero-pill">Servicios</span>
         <span class="hero-pill">Historial</span>
         <span class="hero-pill">Soporte</span>
       </div>
 
-      <div class="hero-buttons">
+      <div class="hero-buttons desktop-only">
         <button mat-button class="btn-outline" type="button">Información</button>
-        <button
-          mat-button
-          class="btn-outline"
-          type="button"
-          [routerLink]="['/auth/register']"
-        >
+        <button mat-button class="btn-outline" type="button" [routerLink]="['/auth/register']">
           Registrar
         </button>
       </div>
@@ -42,108 +42,104 @@
 
   <section class="auth-form-side">
     <div class="auth-form-shell">
-      <mat-card class="login-card">
-        <div class="card-glow"></div>
-
-        <div class="login-header">
+      <mat-card class="login-card stitch-card animate-slide-up">
+        
+        <div class="stitch-card-header desktop-only-flex">
           <div class="main-logo-container" aria-hidden="true">
             <mat-icon>terminal</mat-icon>
           </div>
-
           <h2>Iniciar Sesión</h2>
           <p>Accede a tus servicios, seguimiento y atención personalizada.</p>
         </div>
 
         <mat-card-content class="card-content">
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+            
             @if (error) {
-              <div class="error-banner" role="alert" aria-live="polite">
+              <div class="error-banner animate-fade-in" role="alert" aria-live="polite">
                 <mat-icon>error_outline</mat-icon>
                 <span>{{ error }}</span>
               </div>
             }
 
-            <mat-form-field appearance="outline" class="custom-pill-input">
-              <mat-label>Email</mat-label>
-              <input
-                matInput
-                formControlName="email"
-                type="email"
-                inputmode="email"
-                autocomplete="email"
-                placeholder="ejemplo@mail.com"
-                [disabled]="loading"
-              />
-            </mat-form-field>
+            <div class="stitch-form-group">
+              <label for="emailInput">Email</label>
+              <div class="stitch-input-wrapper" [class.has-error]="form.get('email')?.invalid && form.get('email')?.touched">
+                <mat-icon class="prefix-icon">mail_outline</mat-icon>
+                <input
+                  id="emailInput"
+                  formControlName="email"
+                  type="email"
+                  inputmode="email"
+                  autocomplete="email"
+                  placeholder="nombre@empresa.com"
+                  [disabled]="loading"
+                />
+              </div>
+            </div>
 
-            <mat-form-field appearance="outline" class="custom-pill-input">
-              <mat-label>Contraseña</mat-label>
+            <div class="stitch-form-group">
+              <label for="passwordInput">Password</label>
+              <div class="stitch-input-wrapper" [class.has-error]="form.get('password')?.invalid && form.get('password')?.touched">
+                <mat-icon class="prefix-icon">lock_outline</mat-icon>
+                <input
+                  id="passwordInput"
+                  [type]="hidePassword ? 'password' : 'text'"
+                  formControlName="password"
+                  autocomplete="current-password"
+                  placeholder="••••••••"
+                  enterkeyhint="go"
+                  [disabled]="loading"
+                />
+                <button
+                  type="button"
+                  class="suffix-btn"
+                  (click)="togglePassword()"
+                  [attr.aria-label]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+                  [disabled]="loading"
+                >
+                  <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+                </button>
+              </div>
+            </div>
 
-              <input
-                matInput
-                [type]="hidePassword ? 'password' : 'text'"
-                formControlName="password"
-                autocomplete="current-password"
-                enterkeyhint="go"
-                [disabled]="loading"
-              />
-
-              <button
-                type="button"
-                mat-icon-button
-                matSuffix
-                class="pw-toggle"
-                (click)="togglePassword()"
-                [attr.aria-label]="
-                  hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'
-                "
-                [disabled]="loading"
-              >
-                <mat-icon>{{
-                  hidePassword ? 'visibility' : 'visibility_off'
-                }}</mat-icon>
-              </button>
-            </mat-form-field>
-
-            <div class="forgot-password-box">
-              <mat-checkbox formControlName="recordarme" [disabled]="loading">
+            <div class="form-actions-row">
+              <mat-checkbox formControlName="recordarme" [disabled]="loading" class="stitch-checkbox">
                 Recordarme
               </mat-checkbox>
-
-              <a class="link" [routerLink]="['/auth/forgot-password']">
-                ¿Olvidaste tu contraseña?
+              <a class="forgot-link" [routerLink]="['/auth/forgot-password']">
+                ¿Olvidaste tu<br>contraseña?
               </a>
             </div>
 
             <button
               mat-flat-button
-              class="btn-login-premium"
+              class="stitch-btn-primary"
               type="submit"
-              [disabled]="form.invalid || loading"
+              [disabled]="loading"
             >
-              <span class="btn-login-premium__shimmer"></span>
-
-              <span class="btn-login-premium__label">
-                {{ loading ? 'Entrando...' : 'Entrar' }}
-              </span>
-
+              <span>{{ loading ? 'Entrando...' : 'Entrar' }}</span>
+              @if (!loading) {
+                <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+              }
               @if (loading) {
-                <mat-progress-spinner
-                  class="cta-spinner"
-                  diameter="18"
-                  mode="indeterminate"
-                ></mat-progress-spinner>
+                <mat-progress-spinner class="cta-spinner" diameter="20" mode="indeterminate"></mat-progress-spinner>
               }
             </button>
 
             <div class="register-block">
-              <span>¿No tienes cuenta?</span>
+              <span>¿No tienes una cuenta técnica?</span>
               <a class="register-link" [routerLink]="['/auth/register']">
-                Crea una ahora
+                Solicitar registro de empresa
               </a>
             </div>
           </form>
         </mat-card-content>
+
+        <div class="card-footer-watermark">
+          <mat-icon>support_agent</mat-icon>
+          <span>ASISTENCIA 24/7</span>
+        </div>
       </mat-card>
     </div>
   </section>

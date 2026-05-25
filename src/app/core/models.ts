@@ -10,6 +10,7 @@ export interface ClienteOtItemDto {
   tipo: string;
   updatedAt: string;
   tecnicoNombre?: string | null;
+  equipo?: string | null;
 }
 
 export interface HistorialUsuarioDto {

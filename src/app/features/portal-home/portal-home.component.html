@@ -1,0 +1,79 @@
+<section class="portal-view portal-view--home">
+  <section class="hero-premium-vanguard">
+    <div class="hero-panel-glow"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-grid hero-grid--accent"></div>
+
+    <div class="hero-content">
+      <span class="hero-status-tag">
+        <span class="status-dot"></span>
+        Sistema activo
+      </span>
+
+      <h1 class="hero-main-title">
+        {{ welcomeWord() }}, <br>{{ firstName() }}
+        <mat-icon class="hero-wave-icon">waving_hand</mat-icon>
+      </h1>
+
+      <p class="hero-description">
+        Seguimiento técnico elegante, claro y en tiempo real para tus equipos.
+      </p>
+
+      <button mat-flat-button class="rs-btn rs-btn--primary hero-cta-btn" (click)="crearSolicitud()">
+        <span class="rs-btn__shimmer"></span>
+        <span class="rs-btn__label hero-cta-btn__label">
+          <span class="hero-cta-icon-wrap"><mat-icon>add</mat-icon></span>
+          <span>Crear solicitud</span>
+        </span>
+      </button>
+    </div>
+  </section>
+
+  <section class="order-return-strip mirror-card" *ngIf="latestOt()" aria-label="Continuar seguimiento">
+    <div class="order-return-strip__copy">
+      <span class="order-return-strip__eyebrow">Orden activa</span>
+      <p>Continúa exactamente donde lo dejaste.</p>
+    </div>
+
+    <button mat-flat-button class="order-return-strip__btn" (click)="retomarOrden()">
+      <span>Retomar</span>
+      <mat-icon>north_east</mat-icon>
+    </button>
+  </section>
+
+  <section class="pending-ticket-strip mirror-card" *ngIf="!latestOt() && pendingTicket()" aria-label="Solicitud en revisión">
+    <div class="pending-ticket-strip__icon">
+      <mat-icon>hourglass_empty</mat-icon>
+    </div>
+    <div class="pending-ticket-strip__copy">
+      <span class="pending-ticket-strip__eyebrow">En revisión</span>
+      <p>Tu solicitud fue recibida. El taller la validará pronto.</p>
+    </div>
+  </section>
+
+  <div class="welcome-flow-list">
+    <article class="welcome-flow-card mirror-card">
+      <div class="welcome-flow-card__icon"><mat-icon>edit_square</mat-icon></div>
+      <div class="welcome-flow-card__copy">
+        <h3>Envía tu solicitud</h3>
+        <p>Crea el ticket en segundos describiendo el fallo de tu equipo.</p>
+      </div>
+    </article>
+
+    <article class="welcome-flow-card mirror-card">
+      <div class="welcome-flow-card__icon"><mat-icon>verified</mat-icon></div>
+      <div class="welcome-flow-card__copy">
+        <h3>El taller la valida</h3>
+        <p>Aceptamos la solicitud y generamos tu orden de servicio oficial.</p>
+      </div>
+    </article>
+
+    <article class="welcome-flow-card mirror-card">
+      <div class="welcome-flow-card__icon"><mat-icon>monitor_heart</mat-icon></div>
+      <div class="welcome-flow-card__copy">
+        <h3>Sigue todo en tiempo real</h3>
+        <p>Accede a presupuestos, citas, pagos y chat con técnicos especializados.</p>
+      </div>
+    </article>
+  </div>
+</section>

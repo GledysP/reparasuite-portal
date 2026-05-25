@@ -1,0 +1,132 @@
+:host {
+  display: block;
+  padding: 14px 16px 24px;
+}
+
+.portal-view--home {
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.mirror-card {
+  background: rgba(255, 255, 255, 0.985);
+  border: 1px solid rgba(15, 23, 42, 0.04);
+  border-radius: 22px;
+  box-shadow: 0 12px 24px rgba(8, 26, 75, 0.035);
+}
+
+.hero-premium-vanguard {
+  position: relative;
+  overflow: hidden;
+  min-height: 218px;
+  padding: 24px 20px;
+  border-radius: 30px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #081a4b 0%, #0a1f5c 44%, #0d276d 78%, #081a4b 100%);
+  box-shadow: 0 18px 34px rgba(4, 16, 52, 0.14);
+}
+
+.hero-panel-glow, .hero-grid { position: absolute; inset: 0; pointer-events: none; }
+.hero-grid { background: linear-gradient(rgba(115, 184, 255, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(115, 184, 255, 0.045) 1px, transparent 1px); background-size: 52px 46px; opacity: 0.62; }
+
+.hero-content { position: relative; z-index: 2; display: grid; gap: 0; }
+
+.hero-status-tag {
+  width: fit-content; display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; margin-bottom: 12px;
+  border-radius: 999px; background: rgba(101, 170, 255, 0.1); border: 1px solid rgba(115, 215, 255, 0.16);
+  font-size: 10px; font-weight: 800; color: #79efff;
+}
+.status-dot { width: 7px; height: 7px; border-radius: 999px; background: #24deff; box-shadow: 0 0 12px rgba(36, 222, 255, 0.72); }
+
+.hero-main-title { font-size: 28px; line-height: 1.1; font-weight: 900; margin: 0; }
+.hero-wave-icon { color: #7bf4ff; font-size: 24px; width: 24px; height: 24px; vertical-align: middle; }
+.hero-description { margin: 12px 0 18px; font-size: 13px; line-height: 1.5; color: rgba(228, 237, 255, 0.86); }
+
+.rs-btn--primary {
+  height: 48px; padding: 0 20px; border-radius: 14px; color: #fff; font-weight: 800;
+  background: linear-gradient(135deg, #081a4b 0%, #00bff5 100%); border: none; cursor: pointer;
+}
+.hero-cta-btn__label { display: flex; align-items: center; gap: 10px; }
+.hero-cta-icon-wrap { background: rgba(255,255,255,0.14); border-radius: 8px; width: 24px; height: 24px; display: grid; place-items: center; }
+.hero-cta-icon-wrap mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+/* Flujo de Bienvenida */
+.welcome-flow-list { display: grid; gap: 10px; }
+.welcome-flow-card { padding: 16px; display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: center; }
+.welcome-flow-card__icon { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; background: rgba(34, 205, 255, 0.1); border: 1px solid rgba(0, 209, 255, 0.1); color: #08c9ff; }
+.welcome-flow-card__copy h3 { margin: 0 0 4px; font-size: 14px; font-weight: 800; color: #253248; }
+.welcome-flow-card__copy p { margin: 0; font-size: 12px; color: #5a677a; }
+
+/* =========================================
+   BANNERS DINÁMICOS (Orden y Tickets)
+   ========================================= */
+.order-return-strip, .pending-ticket-strip {
+  padding: 12px 14px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.order-return-strip {
+  justify-content: space-between;
+}
+
+.order-return-strip__copy, .pending-ticket-strip__copy {
+  display: grid;
+  gap: 4px;
+}
+
+.order-return-strip__eyebrow, .pending-ticket-strip__eyebrow {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #97a4b8;
+}
+
+/* Color distintivo para advertencia de revisión */
+.pending-ticket-strip__eyebrow { color: #d97706; }
+
+.order-return-strip__copy p, .pending-ticket-strip__copy p {
+  margin: 0;
+  color: #081a4b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.order-return-strip__btn {
+  min-height: 38px !important;
+  padding: 0 14px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #081a4b 0%, #00bff5 100%) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 10px 20px rgba(0, 191, 245, 0.2) !important;
+  
+  ::ng-deep .mdc-button__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+.pending-ticket-strip__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  color: #d97706;
+
+  mat-icon { font-size: 22px; width: 22px; height: 22px; }
+}

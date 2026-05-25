@@ -1,0 +1,32 @@
+<mat-toolbar class="rs-topbar">
+  <div class="brand brand-lockup">
+    <span class="brand-logo-slot">
+      <img src="assets/logo.png" alt="PAMBYTE" class="brand-logo-img" />
+    </span>
+    <span class="brand-logo">PAMBYTE</span>
+  </div>
+
+  <span class="spacer"></span>
+
+  <div class="topbar-actions">
+    <button
+      mat-icon-button
+      class="topbar-icon-btn"
+      aria-label="Notificaciones">
+      <mat-icon>notifications_none</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      class="topbar-profile-btn"
+      aria-label="Perfil"
+      (click)="logout()">
+      <mat-icon style="font-size: 18px; width: 18px; height: 18px;">logout</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>
+
+<main class="portal-main-content">
+  <router-outlet></router-outlet> 
+</main>
+

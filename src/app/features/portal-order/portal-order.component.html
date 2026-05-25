@@ -1,0 +1,238 @@
+<mat-progress-bar *ngIf="loading() || actionBusy()" mode="indeterminate" class="global-loader"></mat-progress-bar>
+
+<section class="order-canvas" *ngIf="selectedOtDetalle() as ot; else orderEmptyState" [class.is-fading]="detailFade()">
+  <div class="order-canvas__inner">
+    
+<header class="order-screen-head">
+      <div class="order-screen-head__copy">
+        <h2>Mi equipo en servicio</h2>
+      </div>
+      <button mat-flat-button class="order-screen-head__plus rs-btn-cyan" (click)="openNewTicket()">
+        <mat-icon>add</mat-icon>
+        <span class="btn-text">New Service Request</span>
+      </button>
+    </header>
+
+    <section class="order-equipment-block">
+      <div class="service-chips-row">
+        <button type="button" class="service-chip" *ngFor="let item of ots(); trackBy: trackById"
+          [class.is-active]="selectedOtCodigoSignal() === item.codigo" (click)="selectOtChip(item.codigo)">
+          <mat-icon class="chip-icon">{{ getOtChipIcon(item) }}</mat-icon>
+          <div class="chip-info">
+            <span class="chip-title">{{ getOtChipLabel(item) }}</span>
+          </div>
+          <mat-icon class="chip-check" *ngIf="selectedOtCodigoSignal() === item.codigo">check_circle</mat-icon>
+        </button>
+      </div>
+
+      <div class="service-badges mobile-only" *ngIf="activeServiceBadges().length > 0">
+        <span *ngFor="let badge of activeServiceBadges(); trackBy: trackById" 
+              class="service-badge" 
+              [ngClass]="badge.cssClass">
+          <mat-icon *ngIf="badge.icon">{{ badge.icon }}</mat-icon>
+          {{ badge.label }}
+        </span>
+      </div>
+    </section>
+
+    <div class="dashboard-grid">
+      
+      <div class="col-timeline">
+        <div class="timeline-card">
+          <div class="timeline-card__topline">
+            
+            <div class="timeline-titles">
+              <h3>Progreso Técnico</h3>
+              <p>Orden #{{ ot.codigo }} • {{ activeServiceTitle() }}</p>
+              
+              <div class="service-badges desktop-only" *ngIf="activeServiceBadges().length > 0">
+                <span *ngFor="let badge of activeServiceBadges(); trackBy: trackById" 
+                      class="service-badge" 
+                      [ngClass]="badge.cssClass">
+                  <mat-icon *ngIf="badge.icon">{{ badge.icon }}</mat-icon>
+                  {{ badge.label }}
+                </span>
+              </div>
+            </div>
+
+            <div class="timeline-date">
+              <span class="timeline-card__eyebrow status-en-proceso" *ngIf="ot.estado !== 'FINALIZADA'">EN PROCESO</span>
+              <strong>{{ ot.fechaPrevista ? (ot.fechaPrevista | date:'MMM dd, yyyy') : 'Por definir' }}</strong>
+            </div>
+          </div>
+          
+          <div class="timeline-track">
+            <ng-container *ngFor="let step of steps; let i = index; let last = last">
+              <div class="timeline-step">
+                <span class="timeline-step__dot" [class.is-done]="i < stepIndex()" [class.is-active]="i === stepIndex()">
+                  <mat-icon>{{ i < stepIndex() ? 'check' : step.icon }}</mat-icon>
+                </span>
+                <span class="timeline-step__label">{{ step.label }}</span>
+              </div>
+              <span *ngIf="!last" class="timeline-line" [class.is-done]="i < stepIndex()"></span>
+            </ng-container>
+          </div>
+
+          <div class="update-box" *ngIf="ot.fallaDetectada">
+            <mat-icon>info_outline</mat-icon>
+            <div class="update-box-text">
+              <span class="update-subtitle">Nota del técnico</span>
+              <p><strong>Actualización:</strong> {{ ot.fallaDetectada }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-cards">
+        
+        <section class="section-card card-quote">
+          <div class="quote-header">
+            <div class="quote-header-title">
+              <mat-icon>request_quote</mat-icon>
+              <span>Presupuesto</span>
+            </div>
+            <span class="quote-status">{{ presupuestoEstadoLabel(ot.presupuesto?.estado) }}</span>
+          </div>
+          
+          <div class="quote-body">
+            <ng-container *ngIf="ot.presupuesto; else emptyBudget">
+              <div class="budget-shell">
+                <p class="budget-detail">{{ ot.presupuesto.detalle }}</p>
+                <div class="budget-total-row">
+                  <span>Total estimado</span>
+                  <strong class="value">${{ ot.presupuesto.importe | number:'1.2-2' }}</strong>
+                </div>
+              </div>
+              <div class="budget-actions" *ngIf="ot.presupuesto.estado === 'ENVIADO'">
+                <mat-checkbox [checked]="aceptoCheck()" (change)="aceptoCheck.set(!aceptoCheck())" class="budget-check">Acepto este presupuesto.</mat-checkbox>
+                <button mat-flat-button class="action-btn action-btn--primary" (click)="aceptar(getCurrentOtActionId(ot))" [disabled]="!aceptoCheck() || actionBusy()">
+                  Aprobar Reparación
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #emptyBudget>
+              <div class="empty-module-stitch">
+                <mat-icon>settings_suggest</mat-icon>
+                <div class="empty-content">
+                  <h4>Diagnóstico en curso</h4>
+                  <p>El técnico está evaluando el equipo. Recibirás el presupuesto pronto.</p>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+        </section>
+
+        <section class="section-card card-simple">
+          <div class="card-simple-header">
+            <mat-icon>event</mat-icon>
+            <span class="section-eyebrow">Cita de Entrega</span>
+          </div>
+          <ng-container *ngIf="nextCita() as cita; else emptyCita">
+            <div class="appointment-simple">
+              <strong>{{ cita.inicio | date:'EEEE dd MMM' }}</strong>
+              <span>• {{ cita.inicio | date:'HH:mm' }} hrs</span>
+            </div>
+          </ng-container>
+          <ng-template #emptyCita>
+            <div class="empty-module-simple"><p>Aún no hay cita programada.</p></div>
+          </ng-template>
+        </section>
+
+        <section class="section-card card-simple">
+          <div class="card-simple-header">
+            <mat-icon>payments</mat-icon>
+            <span class="section-eyebrow">Estado de Pago</span>
+            <span class="quote-status status-red" *ngIf="ot.pago?.estado !== 'CONFIRMADO'">No Pagado</span>
+            <span class="quote-status status-green" *ngIf="ot.pago?.estado === 'CONFIRMADO'">Pagado</span>
+          </div>
+          <div class="payment-actions">
+            <label class="upload-btn-dashed">
+              <input type="file" hidden accept="image/*,.pdf" (change)="onPagoFileSelected($event)" />
+              <mat-icon>upload_file</mat-icon>
+              <strong>Subir Comprobante</strong>
+              <span>{{ pagoFile()?.name || 'Formatos: JPG, PNG, PDF (Máx 5MB)' }}</span>
+            </label>
+            <button mat-flat-button class="send-proof-btn" *ngIf="pagoFile()" (click)="uploadComprobante(getCurrentOtActionId(ot))" [disabled]="actionBusy()">Enviar Comprobante</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-chat">
+        <section class="section-card chat-section">
+          <div class="chat-module__head">
+            <div class="chat-avatar-wrapper">
+              <img src="assets/logo.png" class="chat-avatar-img">
+              <div class="status-indicator"></div>
+            </div>
+            
+            <div class="chat-module__titles">
+              <span class="section-eyebrow">Soporte Técnico Pambyte</span>
+              <p>Canal de servicio directo.</p>
+            </div>
+          </div>
+
+          <div class="chat-scroll" #chatContainer>
+            <ng-container *ngIf="chatItems().length; else emptyChat">
+              <div class="chat-thread">
+                <ng-container *ngFor="let item of chatItems(); trackBy: trackById">
+                  <div class="chat-divider" *ngIf="item.showDayDivider"><span>{{ item.dayLabel }}</span></div>
+                  <div class="chat-row" [class.is-mine]="item.isMine">
+                    <div class="chat-meta" *ngIf="item.showMeta && !item.isMine">{{ getSenderName(item.message) }}</div>
+                    <div class="chat-bubble">
+                      <div class="chat-text">{{ item.message.contenido }}</div>
+                      <div class="chat-time">{{ item.message.createdAt | date:'HH:mm' }}</div>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-container>
+            <ng-template #emptyChat>
+              <div class="empty-module">
+                <mat-icon>forum</mat-icon>
+                <div class="empty-module__copy"><h3>Sin mensajes todavía</h3><p>Cuando el taller envíe una actualización, la verás aquí.</p></div>
+              </div>
+            </ng-template>
+          </div>
+
+          <form class="chat-composer" [formGroup]="msgForm" (ngSubmit)="sendMessage()">
+            <button mat-icon-button type="button" class="chat-attach-btn">
+              <mat-icon>add_a_photo</mat-icon> </button>
+
+            <input #chatInput type="text" class="chat-input" formControlName="contenido" placeholder="Escribe un mensaje..." />
+            
+            <button mat-flat-button type="submit" class="chat-send-btn" [disabled]="!sendReady() || actionBusy()">
+              <mat-icon>send</mat-icon>
+            </button>
+          </form>
+        </section>
+      </div>
+
+    </div> </div>
+</section>
+
+<ng-template #orderEmptyState>
+  <section class="portal-view portal-view--order-empty">
+    <div class="order-empty-card mirror-card">
+      <div class="order-empty-card__icon"><mat-icon>devices</mat-icon></div>
+      <div class="order-empty-card__copy">
+        <h3>Aún no tienes una orden activa</h3>
+        <p>Crea una solicitud de soporte para empezar.</p>
+      </div>
+      <button mat-flat-button class="rs-btn rs-btn--primary" (click)="openNewTicket()">
+        <span class="rs-btn__label">Crear solicitud</span>
+      </button>
+    </div>
+  </section>
+</ng-template>
+
+<nav class="bottom-nav">
+  <button type="button" class="bottom-nav__item" (click)="goHome()">
+    <mat-icon>home</mat-icon><span>Inicio</span>
+  </button>
+  <button type="button" class="bottom-nav__item is-active" (click)="goToBudget()">
+    <mat-icon>request_quote</mat-icon><span>Órdenes</span>
+  </button>
+  <button type="button" class="bottom-nav__item" (click)="goToChat()">
+    <mat-icon>chat_bubble_outline</mat-icon><span>Chat</span>
+  </button>
+</nav>
